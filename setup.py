@@ -7,7 +7,7 @@ INSTRUCTIONS FOR BUILDING A PIP https://pip.pypa.io/en/stable/cli/pip_wheel/
 Install Prequisites: py -m pip install --upgrade pip setuptools wheel twine build
 Build Pip Distributable: py -m build --wheel from the /PythonTools/ directory with this setup.py in it. #TODO: This only installs the dev version, figure out versioning.
 
-#Developer Install: py -m pip install -e . from this folder.
+#Developer Install: "py -m pip install -e ." from this folder.
 #User Install: 
 
 To build the pip module, increment the version number in the setup.py file and run the following command, uploading the generated package in dist/ for others to install and use.
