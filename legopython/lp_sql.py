@@ -3,8 +3,8 @@
 Module to assist with connections to  relational databases, currently configured to psycopg2 datbases.
 """
 import psycopg2
-from legopython import lp_logging, lp_awssession
-
+from legopython import lp_awssession
+from legopython.lp_logging import logger
 
 def get_db_conn(dblookupname: str) -> dict:
     """
@@ -18,7 +18,7 @@ def get_db_conn(dblookupname: str) -> dict:
             }
 
     if dblookupname not in _databases:
-        lp_logging.logger.error(f'Database not found, available databases are: {list(_databases.keys())}')
+        logger.error(f'Database not found, available databases are: {list(_databases.keys())}')
         return None
 
     #To prevent the credstash password from being retrieved for everyone (which is slow), fill it in here for the DB selected
@@ -47,17 +47,17 @@ def psycopg2_db_connection(database: str) -> tuple[psycopg2.extensions.connectio
     return conn,conn.cursor()
 
 
-def returnGenerator(cursor, arraysize=1500) :
+def return_generator(cursor, arraysize=1500) :
     '''Internal function to create a generator for iterating over return values. EX)
 
-    conn,cur = sql.psycopg2_db_connection(db)
+    conn,cur = lp_sql.psycopg2_db_connection(db)
     sql = """SELECT tablecolumn
     FROM tablename
     WHERE tablecolumn in %s
     and tablecolumn2 not in (0)
     """
     cur.execute(sql, (tuple(tablecolumn),))
-    tablecolumn_ids = list(sql.returnGenerator(cur))
+    tablecolumn_ids = list(sql.return_generator(cur))
     '''
     while True :
         results = cursor.fetchmany(arraysize)
@@ -66,7 +66,8 @@ def returnGenerator(cursor, arraysize=1500) :
         yield from results
 
 
-def main() :
+def main():
+    '''Check AWS Session'''
     if lp_awssession.checkSession() is False :
         exit(1)
 

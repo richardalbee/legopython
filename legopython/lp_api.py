@@ -13,8 +13,7 @@ import base64
 import sys
 from json.decoder import JSONDecodeError
 import requests
-from legopython import lp_logging
-
+from legopython.lp_logging import logger
 
 class InvalidStatusReturned(Exception):
     '''No action when an invalid HTTP status is returned.'''
@@ -37,48 +36,50 @@ def print_raw_request(requesttype:str, input_url: str, input_headers:dict = None
     sys.exit()
 
 
-def get_api_json(url, valid_statuses=None,print_json:bool=False, **kwargs):
+def get_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
     '''
     A handler for the get requests module to return JSON and handle any unexpected statuses.
-    Optional: print_json = True to print json. Useful for troubleshooting.
+    Optional: pretty_print = True to print json. Useful for troubleshooting.
     '''
-    response = requests.get(url,**kwargs)
+    response = requests.get(url, **kwargs)
 
     if response.status_code in (valid_statuses or [200, 201]):
         return response.json()
     input_headers = kwargs.pop('headers')
-    if print_json: print_raw_request('GET', url, input_headers)
+    if pretty_print:
+        print_raw_request('GET', url, input_headers)
     raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
-def post_api_json(url, valid_statuses=None,print_json:bool=False, **kwargs):
+def post_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
     '''
     A handler for the posts requests module to return JSON and handle any unexpected statuses.
-    Optional: print_json = True to print json. Useful for troubleshooting.
+    Optional: pretty_print = True to print json. Useful for troubleshooting.
     '''
     response = requests.post(url, **kwargs)
     if response.status_code in (valid_statuses or [200, 201, 204]):
         if response.status_code != 204: #No content returned, breaks response.json()
             try:
-                lp_logging.debug(f"Success, HTTP {response.status_code}.")
+                logger.debug(f"Success, HTTP {response.status_code}.")
                 return response.json()
-            except JSONDecodeError as content_exception:  # includes simplejson.decoder.JSONDecodeError
-                lp_logging.debug(f"Success, HTTP {response.status_code}. No Content Returned.")
+            except JSONDecodeError:  # includes simplejson.decoder.JSONDecodeError
+                logger.debug(f"Success, HTTP {response.status_code}. No Content Returned.")
                 return {}
         else:
-            lp_logging.info("Success, HTTP 204 No Content returned.")
+            logger.info("Success, HTTP 204 No Content returned.")
             return {}
     else:
         input_headers = kwargs.pop('headers')
         input_payload = kwargs.pop('data')
-        if print_json: print_raw_request('POST', url, input_headers, input_payload)
+        if pretty_print:
+            print_raw_request('POST', url, input_headers, input_payload)
         raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
-def put_api_json(url, valid_statuses=None, print_json:bool=False, **kwargs):
+def put_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
     '''
     A handler for the put requests module to return JSON and handle any unexpected statuses.
-    Optional: print_json = True to print json. Useful for troubleshooting.
+    Optional: pretty_print = True to print json. Useful for troubleshooting.
     '''
     response = requests.put(url,**kwargs)
     if response.status_code in (valid_statuses or [200, 204]):
@@ -86,25 +87,25 @@ def put_api_json(url, valid_statuses=None, print_json:bool=False, **kwargs):
             return response.json()
         else:
             #Changed to logger.info for succinct multithreaded printouts.
-            lp_logging.info(f"Success, HTTP 204 No Content returned.")
+            logger.info(f"Success, HTTP 204 No Content returned.")
             return {}
     else:
         input_headers = kwargs.pop('headers')
         input_payload = kwargs.pop('data')
-        if print_json: print_raw_request('PUT', url, input_headers, input_payload)
+        if pretty_print: print_raw_request('PUT', url, input_headers, input_payload)
         raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
-def delete_api_json(url, valid_statuses=None,print_json:bool=False, **kwargs):
+def delete_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
     '''
     A handler for the requests module to return JSON and handle any
     unexpected statuses. This one is for posts.
-    Optional: print_json = True to print json. Useful for troubleshooting.
+    Optional: pretty_print = True to print json. Useful for troubleshooting.
     '''
     response = requests.delete(url,**kwargs)
     if response.status_code not in (valid_statuses or [204]):
         input_headers = kwargs.pop('headers')
-        if print_json: print_raw_request('DELETE', url, input_headers)
+        if pretty_print: print_raw_request('DELETE', url, input_headers)
         raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
@@ -162,7 +163,7 @@ class AuthHandler:
             #raise TypeError(f"Environment {env} not in environment config")
             #In some cases you want to run QA env but QA env does not exist for Camudna. So, this should not error but instead not be a hard stop.
             #How do we get this to warn that Camunda doesn't have QA, for example?
-            lp_logging.warn(f"Environment {env} does not exist as a config")
+            logger.warn(f"Environment {env} does not exist as a config")
         else:
             self._env = env
         #if the environment changes we want to eliminate the cached credentials
@@ -183,7 +184,7 @@ class AuthHandler:
         cached_credential_path = Path(moxe_folder) / f"{self.name}-{self.env}.json"
         credfile = Path(cached_credential_path)
         if not credfile.exists():
-            lp_logging.debug("Could not find cached credentials at %s", cached_credential_path)
+            logger.debug("Could not find cached credentials at %s", cached_credential_path)
             return None
         return json.loads(credfile.read_text(encoding='utf-8'))
 
@@ -216,7 +217,7 @@ class AuthHandler:
             if isinstance(base_value,dict):
                 for key,value in base_value.items():
                     if callable(value):
-                        lp_logging.debug("Config item %s for %s is a function, calling function to update value",key,base_key)
+                        logger.debug("Config item %s for %s is a function, calling function to update value",key,base_key)
                         token_params[base_key][key] = value()
         return post_api_json(**token_params)
 
@@ -227,10 +228,10 @@ class AuthHandler:
         """
         now = int(time())
         if self.credentials is None:
-            lp_logging.debug("Trying to get cached credentials")
+            logger.debug("Trying to get cached credentials")
             self.credentials = self._get_cached_credentials()
         if self.credentials is None or (self.credentials.get('expiry') and self.credentials.get('expiry',0) <= now):
-            lp_logging.debug('Getting new authentication credentials')
+            logger.debug('Getting new authentication credentials')
             self.credentials = {}
             self.credentials['received'] = now
             if self.auth_type == AuthType.BASIC:

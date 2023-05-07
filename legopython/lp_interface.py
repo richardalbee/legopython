@@ -1,4 +1,4 @@
-
+#pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter, consider-iterating-dictionary, logging-fstring-interpolation
 ''' A tool for calling legopython functions.
 
 To add a function to legopython UI, add an entry to support_functions_menu and a if user_input == x: statement.
@@ -9,22 +9,9 @@ import time
 import types
 import typing
 import subprocess
-import csv
 import sys
 from legopython import lp_general, lp_settings
 from legopython.lp_logging import logger
-
-
-def read_csv(filename: str) -> list:
-    '''read a 1 column csv without headers from file, return list.'''
-    try:
-        with open(filename, newline='',encoding='utf-8') as writer:
-            reader = csv.reader(writer)
-            csv_column = list(reader)
-    except:
-        print(f'{filename} not found, no data loaded.')
-        return []
-    return [item for sublist in csv_column for item in sublist]
 
 
 def list_function_parameters(function: str) -> dict:
@@ -51,7 +38,6 @@ def prompt_set_environment():
         3: {'name':'test'},
         4: {'name':'int'}
     }
-
     print('0. Return\n')
     for key,value in environment_dict.items():
         print(f'{key}: {value["name"]}')
@@ -112,17 +98,19 @@ def prompt_user_list(parameter_name:str):
     '''Prompts user to enter list input, returns list'''
     valid_input = False
     while valid_input is False:
-        user_input = prompt_user(f"Enter input for {parameter_name} as ['str','str'] or filename of 1 column CSV as 'excelfilename.csv': ")
+        user_input = prompt_user(f"Enter input for {parameter_name} as ['str','str'] or filename of a headerless 1 column CSV as 'excelfilename.csv': ")
         if user_input == '':
             valid_input = True
         if user_input.startswith('[') and user_input.endswith(']'):
             user_input = ast.literal_eval(user_input)
             valid_input = True
         elif user_input.endswith('.csv'):
-            user_input = read_csv(user_input)
+            user_input = lp_general.read_csv(user_input, hasheader = False)
             valid_input = True
+
         if valid_input is not True:
             print(f"Please enter value for {parameter_name} as list ['str','str'] or excelfilename.csv")
+
     return user_input
 
 def prompt_user_dict(parameter_name:str):
@@ -202,7 +190,7 @@ def support_functions_menu():
             print(f'{key}: {value["name"]}')
     print('\nCtrl + C or type exit to close.')
 
-    user_input = lp_general.prompt_user_int('\nEnter the number for a Support Function ',maximum=(len(support_functions_dict)-1))
+    user_input = lp_general.prompt_user_int('\nEnter the number for a Support Function ', maximum=(len(support_functions_dict)-1))
 
     if isinstance(support_functions_dict[user_input]['function'], types.FunctionType): #If the support dict function is a function instead of a string:
         func = support_functions_dict[user_input]['function']

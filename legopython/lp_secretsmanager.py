@@ -1,9 +1,7 @@
 #pylint: disable=line-too-long
-#This code was taken from "Sample Code" in secrets manager
-#Some information used from https://github.com/awslabs/aws-data-wrangler/blob/main/awswrangler/secretsmanager.py
+#This code was taken from "Sample Code" in secrets manager; Some information used from https://github.com/awslabs/aws-data-wrangler/blob/main/awswrangler/secretsmanager.py
 import json
 import base64
-
 from typing import Any, Dict, cast, Union
 import boto3
 from botocore.exceptions import ClientError

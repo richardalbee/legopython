@@ -1,7 +1,7 @@
 '''Module with base AWS functions relating to IAM permissions'''
-import boto3
 import os
 import logging
+import boto3
 
 logger = logging.getLogger("pythontools")
 
@@ -9,8 +9,8 @@ def checkSession() -> bool:
     '''validates whether or not the user has a valid session'''
     try :
         boto3.client('sts').get_caller_identity()
-    except :
-        logger.warning("AWS Session invalid, or other issue connecting to AWS, please check your AWS session and network connectivity")
+    except:
+        logger.warning("AWS Session invalid, or issue connecting to AWS, please check your AWS session and network connectivity")
         return False
     logger.debug('awssession.checkSession found a valid session')
     return True
@@ -50,8 +50,11 @@ class AWSTokenExpiredError(Exception):
 
 
 def main() :
-    if checkSession() :#todo -- add optional parameter to checkSession to give the time of token expiration
-        logger.info('AWS token or session is valid and not expired')
+    '''Check to see if a session to AWS is connected.'''
+    if checkSession():
+        logger.info('AWS session is valid and not expired')
+    else:
+        logger.error('Please re connect to aws: "AWS SSO Login"')
 
 if __name__ == '__main__':
     main()

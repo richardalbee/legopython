@@ -1,4 +1,4 @@
-#pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter
+#pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter, consider-iterating-dictionary, logging-fstring-interpolation
 '''
 Function to interact with Camunda for Python.
 '''

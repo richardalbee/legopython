@@ -1,16 +1,4 @@
 #pylint: disable=line-too-long
-import sys
-import traceback
-import datetime
-import boto3
-import botocore
-from pathlib import Path
-import logging
-from typing import Generator
-
-from multiprocessing.pool import ThreadPool
-from legopython import lp_logging, lp_general, lp_awssession
-
 '''
 S3
 
@@ -21,6 +9,17 @@ Examples:
         $ S3 file.txt s3:\\file-prod\prod
         $ S3 s3:\\file-prod\prod\Downloads
 '''
+import sys
+import traceback
+import datetime
+from pathlib import Path
+from typing import Generator
+import logging
+from multiprocessing.pool import ThreadPool
+import boto3
+import botocore
+from legopython import lp_logging, lp_general, lp_awssession
+from legopython.lp_logging import logger
 
 AWS_REGION = 'us-east-1'
 
@@ -95,10 +94,6 @@ def return_s3folderpath(key, bucket=True) :
     if bucket:
         return key.rsplit('/', 1)[0].split('/',1)[1] + '/'
     return key.rsplit('/', 1)[0] + '/'
-    # elif len(key.split('/')) == 1 : #deal with keys passed in at the top level
-    #     return '' #TODO - should this return a "/"?
-    # else :
-        # return key.rsplit('/', 1)[0] + '/' #rsplit strips the trailing slash, add back in
 
 
 def __getAS3File(bucket, key, downloadfolder = '.', delete = False, fileLedger = None, contents = False) :
@@ -115,7 +110,7 @@ def __getAS3File(bucket, key, downloadfolder = '.', delete = False, fileLedger =
                 Key=key
         )
 
-        if fileLedger : #TODO - this should be recorded here but run below the download_file in case the operation crashes
+        if fileLedger:
             lp_logging.writeToFileLedger(
                     return_s3filename(key),
                     's3://' + bucket.name + '/' + key,

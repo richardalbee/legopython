@@ -1,9 +1,13 @@
+#pylint: disable=line-too-long
 '''Module for retrieving, modifying, and deleting data within AWS DynamoDB'''
 import time
-import datetime
+from datetime import datetime
+from getpass import getuser
+from functools import wraps
 import boto3
 from boto3.dynamodb.conditions import Key
-from legopython import lp_logging, lp_awssession
+from legopython import lp_awssession
+from legopython.lp_logging import logger
 
 
 def delete_prod_dynamodb_indices(partition_key_name:str, partition_key_value:str, sort_key_name:str, sort_key_value:list, dynamo_tablename:str, aws_region='us-east-1'):
@@ -94,7 +98,7 @@ def cloudlog(arglist=None, username=None):
         @wraps(func)
         def inner(*args,**kwargs):
             if not lp_awssession.checkSession():
-                lp_logging.error("Cannot log without active AWS session.")
+                logger.error("Cannot log without active AWS session.")
                 return None
             start = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             then = time.time()
@@ -110,7 +114,7 @@ def cloudlog(arglist=None, username=None):
             except Exception as err:
                 success = False
                 exception_message = str(err)
-                lp_logging.error(str(err))
+                logger.error(str(err))
                 result = None
             now = time.time()
             duration_ms = (now-then) * 1000

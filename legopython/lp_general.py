@@ -4,7 +4,6 @@ import csv
 from pathlib import Path
 import logging
 from distutils.util import strtobool
-from legopython import lp_logging #import this until we're able to fully deprecate the writeToFileLedger function
 
 logger = logging.getLogger("moxepython")
 
@@ -73,12 +72,12 @@ def read_csv(filename: str, hasheader:bool = False) -> list:
     hasheader = True removes the first line.
     '''
     try:
-        with open(filename, newline='') as writer:
+        with open(filename, newline='', encoding='utf-8') as writer:
             reader = csv.reader(writer)
             if hasheader:
                 reader.pop(0)
             csv_column = list(reader)
-    except:
+    except OSError:
         print(f'{filename} not found, no data loaded.')
         return []
     return [item for sublist in csv_column for item in sublist]
