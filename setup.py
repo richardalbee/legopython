@@ -48,7 +48,7 @@ scripts = [
     ]
 '''
 scripts = []
-import_folders = ['modules','scripts','internalapps']
+import_folders = ['legopython','scripts','internalapps']
 for folder in import_folders:
     for python_module in Path(folder).iterdir():
         if python_module.suffix == ".py": #grab python scripts only
@@ -57,7 +57,7 @@ for folder in import_folders:
 setuptools.setup(
     name = 'legopython',
     version = os.getenv('PACKAGE_VERSION', '0.0.dev0'),
-    description = 'Python library designed to make scripting easier',
+    description = 'Python library designed to make scripting easier with component-based development.',
     author = 'Richard Albee',
     author_email='ralbee1@iwu.edu',
     packages = setuptools.find_packages(),

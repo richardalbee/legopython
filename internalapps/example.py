@@ -2,14 +2,8 @@
 '''
 Function to interact with Camunda for Python.
 '''
-import base64
-import json
-from typing import Union,Sequence
-import ast
 import boto3
-from Python import API, Secrets, AWS, Py, Settings
-from Python.Logging import logger,cloudlog
-from Python.API import InvalidStatusReturned
+from legopython import lp_api, lp_aws, lp_settings, lp_logging, lp_secretsmanager, lp_settings
 
 kms_client = boto3.client('kms')
 
@@ -33,22 +27,22 @@ env_config = {
     }
 }
 
-if not AWS.checkSession():
-    logger.error("Authenticate using your AWS credentials to proceed.")
+if not lp_aws.checkSession():
+    lp_logging.error("Authenticate using your AWS credentials to proceed.")
 
 for env in env_config.keys():
     env_config[env]["token_params"]["data"] = {
         "audience": "https://application.health.com",
         "grant_type": "client_credentials",
-        **(Secrets.get_secret_v2(f"{env}-auth0-application-client"))
+        **(lp_secretsmanager.get_secret_v2(f"{env}-auth0-application-client"))
     }
     env_config[env]["token_params"]["headers"] = {"Content-Type":"application/x-www-form-urlencoded"}
 
-auth_handler = API.AuthHandler(
+auth_handler = lp_api.AuthHandler(
     name="example",
-    auth_type=API.AuthType.JWT_BEARER,
+    auth_type=lp_api.AuthType.JWT_BEARER,
     env_config=env_config,
-    env=Settings.ENVIRONMENT
+    env=lp_settings.ENVIRONMENT
 )
 
 manage_auth = auth_handler.manage_auth
@@ -57,3 +51,5 @@ manage_auth = auth_handler.manage_auth
 @manage_auth()
 def fake_example(**kwargs):
     print(kwargs)
+
+print('TESTING EXAMPLE.py')
