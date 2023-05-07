@@ -1,6 +1,7 @@
-''' A tool for calling moxeSupport functions.
 
-To add a function to moxeSupport UI, add an entry to support_functions_menu and a if user_input == x: statement.
+''' A tool for calling legopython functions.
+
+To add a function to legopython UI, add an entry to support_functions_menu and a if user_input == x: statement.
 Any function added must have type hinting on every parameter or have those parameters missing type hinting skipped.
 '''
 import ast
@@ -10,13 +11,14 @@ import typing
 import subprocess
 import csv
 import sys
-from legopython import lp_general, lp_settings, lp_logging
+from legopython import lp_general, lp_settings
+from legopython.lp_logging import logger
 
 
 def read_csv(filename: str) -> list:
     '''read a 1 column csv without headers from file, return list.'''
     try:
-        with open(filename, newline='') as writer:
+        with open(filename, newline='',encoding='utf-8') as writer:
             reader = csv.reader(writer)
             csv_column = list(reader)
     except:
@@ -56,7 +58,7 @@ def prompt_set_environment():
     user_response = lp_general.prompt_user_int('Enter # for ENV you want to change to', maximum=len(environment_dict))
 
     if user_response == 0:
-        lp_logging.info(f'Exiting without changing Env. Env currently set to {lp_settings.ENVIRONMENT}')
+        logger.info(f'Exiting without changing Env. Env currently set to {lp_settings.ENVIRONMENT}')
         return support_functions_menu()
     lp_settings.set_environment(environment_dict[user_response]['name'])
 
@@ -165,7 +167,7 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
                 user_input = prompt_user_int(parameter_name=parameter)
             if parameter_dict[parameter] == type(['str','str','str']): #prompt for list
                 user_input = prompt_user_list(parameter_name=parameter)
-            if parameter_dict[parameter] == type({"key": "value"}): #prompt for dict, avoid this data input for moxeSupport functions.
+            if parameter_dict[parameter] == type({"key": "value"}): #prompt for dict, avoid this data input for legopython functions.
                 user_input = prompt_user_list(parameter_name=parameter)
             if parameter_dict[parameter] == typing.Union[list, str]: #moxeRequests.Unpark requests has a type hint which doesn't work well here.
                 user_input = prompt_user_list(parameter_name=parameter)
@@ -176,12 +178,12 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
             except UnboundLocalError:
                 print(f'{parameter_dict[parameter]} is not a supported type; bug with {function_name}. Exiting.')
                 time.sleep(3)
-                return support_functions_menu(imp_version)
+                return support_functions_menu()
 
     if prompt:
         print(f'\n {parameter_input} \n')
         if not lp_general.yesno(question=f"Are you sure you want to run {function_name.__name__} with the parameters above?"):
-            return support_functions_menu(imp_version)
+            return support_functions_menu()
     return parameter_input
 
 def support_functions_menu():
@@ -221,7 +223,7 @@ def support_functions_menu():
 
 
 def main():
-    ''' Start the interface loop for moxeSupport text UI'''
+    ''' Start the interface loop for legopython text UI'''
     support_functions_menu()
 
 

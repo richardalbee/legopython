@@ -1,7 +1,5 @@
 #pylint: disable=line-too-long
-'''
-    legoPython functions related to logging or logging-adjacent needs
-'''
+'''legoPython functions related to logging'''
 import sys
 import time
 from pathlib import Path
@@ -39,7 +37,7 @@ def clearMPDefaultHandler():
     '''
     logger.removeHandler(logger.handlers[0]) #This seems safer than logger.handlers.clear()
 
-def testLPLogging():
+def legoPythonLogging():
     logger.debug('debug message')
     logger.info('info message')
     logger.warning('warn message')

@@ -48,7 +48,7 @@ scripts = [
     ]
 '''
 scripts = []
-import_folders = ['legopython','scripts','internalapps']
+import_folders = ['legopython','scripts','external']
 for folder in import_folders:
     for python_module in Path(folder).iterdir():
         if python_module.suffix == ".py": #grab python scripts only
