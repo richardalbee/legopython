@@ -1,4 +1,32 @@
-'''Module with base AWS functions relating to IAM permissions'''
+'''Module with base AWS functions relating to IAM permissions
+
+To install AWS SSO Login:
+
+Prerequisites
+Download AWSCLI v2: Installing or updating the latest version of the AWS CLI - AWS Command Line Interface
+
+If you are migrating off of using AWSCLISetup.py:
+
+Browse to your AWS credentials folder (cd ~/.aws)
+
+Rename the files config and credentials with an extension, like .bak , to deactivate them.
+
+Initial setup
+Open terminal session and execute the following:
+
+
+aws configure sso
+If prompted for a SSO start URL, sign into AWS and find your SSO Start URL
+For SSO Region just hit <enter> for SSO session name and ignore warning. After the first time running this, these values should be cached as the default and replace the [None] below, so you should just have to hit <enter> :
+
+
+SSO session name (Recommended):
+←[1mWARNING: Configuring using legacy format (e.g. without an SSO session).
+Consider re-running "configure sso" command and providing a session name.
+SSO start URL [None]: {SSO Start URL}
+SSO Region [None]: us-east-1
+
+'''
 import os
 import logging
 import boto3

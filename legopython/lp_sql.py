@@ -13,7 +13,6 @@ def get_db_conn(dblookupname: str) -> dict:
     """
 
     _databases = {
-            #Production databases TODO: Migrate credstash to secrets manager
             'prodro' : {'host':'ro.health.com','database':'prod','user':'prod_user','credstashkey':'pgsql.implementationpw.prod','environment':'prod', 'port': 5432},
             }
 
@@ -21,8 +20,8 @@ def get_db_conn(dblookupname: str) -> dict:
         logger.error(f'Database not found, available databases are: {list(_databases.keys())}')
         return None
 
-    #To prevent the credstash password from being retrieved for everyone (which is slow), fill it in here for the DB selected
-    _databases[dblookupname]['password'] = Credstash.get_password_from_credstash(secret_name=_databases[dblookupname]['credstashkey'],environment=_databases[dblookupname]['environment'])
+    #Production databases TODO: Migrate credstash to secrets manager
+    #_databases[dblookupname]['password'] = Credstash.get_password_from_credstash(secret_name=_databases[dblookupname]['credstashkey'],environment=_databases[dblookupname]['environment'])
     
     if 'port' not in _databases[dblookupname]: #Set default port here to save space above
         _databases[dblookupname]['port'] = '5432'

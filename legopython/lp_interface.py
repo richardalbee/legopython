@@ -10,7 +10,8 @@ import types
 import typing
 import subprocess
 import sys
-from legopython import lp_general, lp_settings
+from external import example
+from legopython import lp_general, lp_settings, lp_awssession
 from legopython.lp_logging import logger
 
 
@@ -77,7 +78,7 @@ def prompt_user_bool(parameter_name:str):
             user_input = False
             valid_input = True
         elif valid_input is not True:
-                print(f'Please enter true/false or y/n for {parameter_name}')
+            print(f'Please enter true/false or y/n for {parameter_name}')
     return user_input
 
 def prompt_user_int(parameter_name:str):
@@ -179,7 +180,8 @@ def support_functions_menu():
 
     support_functions_dict = {
         0   : {'name':f'CURRENT ENV = {lp_settings.ENVIRONMENT}','function':prompt_set_environment,'skip_param':[1]},
-        1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/moxe-pypi/simple','skip_param':[]} 
+        1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/moxe-pypi/simple','skip_param':[]},
+        2   : {'name':'Example Internal Application Module','function':example.auth_example,'skip_param':[]}
     }
 
     #Display menu
@@ -212,6 +214,10 @@ def support_functions_menu():
 
 def main():
     ''' Start the interface loop for legopython text UI'''
+    if lp_awssession.checkSession():
+        logger.info('AWS session is valid and not expired')
+    else:
+        logger.error('Please re connect to aws: "AWS SSO Login"')
     support_functions_menu()
 
 

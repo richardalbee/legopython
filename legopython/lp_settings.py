@@ -12,7 +12,7 @@ from pathlib import Path
 from legopython.lp_logging import logger
 
 ENVIRONMENT = 'test'
-LOGGER_LEVEL = "none"
+LOGGER_LEVEL = 'info'
 
 tools_settings_dict = {
     "Environment" : {'config_section_name':'Global','variable_name': "Environment", 'variable_value': ENVIRONMENT, 'allowed_values': ['prod', 'test']},
@@ -54,7 +54,7 @@ def __configparse_get_cache() -> bool:
     return True
 
 
-def _configparse_cache():
+def __configparse_cache():
     """Private function to store environment on disk"""
     tools_folder.mkdir(exist_ok=True)
     config = ConfigParser()
@@ -76,7 +76,7 @@ def set_environment(env:str):
     #Since a dictionary is not auto updated by the global variable, updating dict
     if env.lower() in tools_settings_dict['Environment']['allowed_values']:
         tools_settings_dict['Environment']['variable_value']=env.lower()
-        _configparse_cache()
+        __configparse_cache()
     else:
         logger.error(f'Supported Environments are: {tools_settings_dict["Environment"]["allowed_values"]}')
         return
@@ -98,7 +98,7 @@ def create_pip_update_credentials():
 if __configparse_get_cache():
     logger.debug(f"Successfully loaded file from {config_filepath}")
 else:
-    _configparse_cache()
+    __configparse_cache()
     logger.debug(f"{config_filepath} created with ENV set to: {ENVIRONMENT} and logger_level set to {LOGGER_LEVEL}")
 logger.debug(f"Environment is set to {ENVIRONMENT}.")
 
