@@ -1,11 +1,11 @@
-'''#moxePy - A place to store MoxePython functions that have general usability across modules, but aren't necessarily specific to any one module'''
+'''A place to store legoPython functions that have general usability across modules, but aren't necessarily specific to any one module'''
 #pylint: disable=line-too-long
 import csv
 from pathlib import Path
 import logging
 from distutils.util import strtobool
 
-logger = logging.getLogger("moxepython")
+logger = logging.getLogger("legopython")
 
 def listdir_path_v2(file) :
     '''

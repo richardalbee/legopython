@@ -16,7 +16,7 @@ from legopython.lp_logging import logger
 
 
 def list_function_parameters(function: str) -> dict:
-    '''Get a list of parameters and typing hints from an explicit moxePython function.'''
+    '''Get a list of parameters and typing hints from an explicit function.'''
     function_annotations = function.__annotations__
     if 'return' in function_annotations.keys():
         function_annotations.pop('return', None)
@@ -32,7 +32,7 @@ def prompt_user(question: str) -> str:
     return user_input
 
 def prompt_set_environment():
-    '''Prompt user to set the MoxePython global environment'''
+    '''Prompt user to set the Python global environment'''
     environment_dict = {
         1: {'name':'prod'},
         2: {'name':'qa'},
@@ -158,7 +158,7 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
                 user_input = prompt_user_list(parameter_name=parameter)
             if parameter_dict[parameter] == type({"key": "value"}): #prompt for dict, avoid this data input for legopython functions.
                 user_input = prompt_user_list(parameter_name=parameter)
-            if parameter_dict[parameter] == typing.Union[list, str]: #moxeRequests.Unpark requests has a type hint which doesn't work well here.
+            if parameter_dict[parameter] == typing.Union[list, str]:
                 user_input = prompt_user_list(parameter_name=parameter)
 
             try: #If user entered blank, skip. Else, add to kwargs dictionary.
@@ -180,7 +180,7 @@ def support_functions_menu():
 
     support_functions_dict = {
         0   : {'name':f'CURRENT ENV = {lp_settings.ENVIRONMENT}','function':prompt_set_environment,'skip_param':[1]},
-        1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/moxe-pypi/simple','skip_param':[]},
+        1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple','skip_param':[]},
         2   : {'name':'Example Internal Application Module','function':example.auth_example,'skip_param':[]}
     }
 

@@ -1,19 +1,19 @@
 #pylint: disable=line-too-long
 '''
-Handles API calls for other MoxePython scripts.
+Handles API calls for other modules.
 '''
 
 from enum import Enum
 from functools import wraps
 from getpass import getpass
 from pathlib import Path
-from time import time
+from time import time, sleep
 import json
 import base64
-import sys
 from json.decoder import JSONDecodeError
 import requests
 from legopython.lp_logging import logger
+from . import lp_logging
 
 class InvalidStatusReturned(Exception):
     '''No action when an invalid HTTP status is returned.'''
@@ -29,11 +29,26 @@ def print_raw_request(requesttype:str, input_url: str, input_headers:dict = None
     print('{}\n{}\r\n{}\r\n\r\n{}'.format(
         '-----------START-----------',
         req.method + ' ' + req.url,
-        '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
+        '\r\n'.join('{}: {}'.format(key, value) for key, value in req.headers.items()),
         req.body,
     ))
-    print('\nPrinted API call above for troubleshooting, exiting.')
-    sys.exit()
+
+def print_raw_request2(requesttype:str, url: str, **kwargs):
+    """pretty prints raw http requests to console for troubleshooting purposes.
+    requesttype = HTTP Method, enter one of: delete, get, post, patch, head, put
+    url = Address to send the api request
+    **Kwargs accepts the following key-value pairs: #TODO: list all valid params here
+    """
+
+    req = requests.Request(requesttype = requesttype, url = url, **kwargs)
+    req = req.prepare()
+    print('{}\n{}\r\n{}\r\n\r\n{}'.format(
+        '-----------START-----------',
+        req.method + ' ' + req.url,
+        '\r\n'.join('{}: {}'.format(key, value) for key, value in req.headers.items()),
+        req.body,
+    ))
+
 
 
 def get_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
@@ -109,12 +124,46 @@ def delete_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
         raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
+def send_http_call(method:str, url:str, valid_statuses:list = None, print_raw_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
+    '''
+    Sends an api call via requests.request(method, url, args) and handles errors and retries
+
+    method = HTTP Method, enter one of: delete, get, post, patch, head, put, 
+    url = String Address to send the api request
+    valid_statuses = Throws an error or will retry if one of these http statuses is not provided. List of ints
+    Timeout = Time in ms to wait for a response. ex) 500 = 0.5 seconds
+    http_attempts = How many times you will attempt to retry and get a response, must be equal to or higher than 1, whole number.
+
+    **Kwargs accepts values for the following dictionary keys: data, params, headers, cookies, files, auth, allow_redirects, proxies, hooks, stream, verify, cert, json 
+
+    Request Module Exceptions: https://requests.readthedocs.io/en/v3.0.0/_modules/requests/exceptions/ 
+    '''
+    #TODO: Test this function and simplify this codebase
+    if print_raw_request: #Print the raw request sent for troubleshooting purposes.
+        print_raw_request2(method, url, **kwargs)
+        exit
+    
+    for retry in range(http_attempts):
+        try:
+            response = requests.request(method = method, url = url, timeout = timeout, **kwargs)
+            if valid_statuses and response.status_code not in (valid_statuses): #If specific valid statuses are provided, throw error if not valid status.
+                raise InvalidStatusReturned("Returned invalid status from {}, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
+        except requests.exceptions.RequestException as RequestException: #General catch for other errors.
+            raise RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
+        else: 
+            return response
+
+
+
 class AuthType(Enum):
-    """Different authentication types supported by the AuthHandler."""
+    """
+    Different authentication types supported by the AuthHandler.
+    https://www.geeksforgeeks.org/authentication-using-python-requests/
+    """
     BASIC = 1
     JWT_BEARER = 2
 
-moxe_folder = Path.home() / ".pythontoolscreds"
+home_folder = Path.home() / ".legopython"
 
 class AuthHandler:
     """Handles authentication for APIs."""
@@ -162,7 +211,7 @@ class AuthHandler:
         if env not in self.env_config.keys():
             #raise TypeError(f"Environment {env} not in environment config")
             #In some cases you want to run QA env but QA env does not exist for Camudna. So, this should not error but instead not be a hard stop.
-            #How do we get this to warn that Camunda doesn't have QA, for example?
+            #How do we get this to warn that a module doesn't have QA, for example?
             logger.warn(f"Environment {env} does not exist as a config")
         else:
             self._env = env
@@ -180,8 +229,8 @@ class AuthHandler:
 
     def _get_cached_credentials(self):
         """Private function to get credentials stored on disk"""
-        Path(moxe_folder).mkdir(exist_ok=True)
-        cached_credential_path = Path(moxe_folder) / f"{self.name}-{self.env}.json"
+        Path(home_folder).mkdir(exist_ok=True)
+        cached_credential_path = Path(home_folder) / f"{self.name}-{self.env}.json"
         credfile = Path(cached_credential_path)
         if not credfile.exists():
             logger.debug("Could not find cached credentials at %s", cached_credential_path)
@@ -190,15 +239,15 @@ class AuthHandler:
 
     def _cache_credentials(self):
         """Private function to store credentials on disk"""
-        Path(moxe_folder).mkdir(exist_ok=True)
-        cached_credential_path = Path(moxe_folder) / f"{self.name}-{self.env}.json"
+        Path(home_folder).mkdir(exist_ok=True)
+        cached_credential_path = Path(home_folder) / f"{self.name}-{self.env}.json"
         credfile = Path(cached_credential_path)
         credfile.write_text(json.dumps(self.credentials),encoding="utf-8")
 
     def clear_cached_credentials(self):
         """Clears credentials cached on disk and in memory"""
-        Path(moxe_folder).mkdir(exist_ok=True)
-        cached_credential_path = Path(moxe_folder) / f"{self.name}-{self.env}.json"
+        Path(home_folder).mkdir(exist_ok=True)
+        cached_credential_path = Path(home_folder) / f"{self.name}-{self.env}.json"
         cached_credential_path.unlink()
         self.credentials = None
 
