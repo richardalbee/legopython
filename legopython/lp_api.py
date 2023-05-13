@@ -148,9 +148,9 @@ def send_http_call(method:str, url:str, valid_statuses:list = None, print_raw_re
             response = requests.request(method = method, url = url, timeout = timeout, **kwargs)
             if valid_statuses and response.status_code not in (valid_statuses): #If specific valid statuses are provided, throw error if not valid status.
                 raise InvalidStatusReturned("Returned invalid status from {}, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-        except requests.exceptions.RequestException as RequestException: #General catch for other errors.
-            raise RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-        else: 
+        except requests.exceptions.RequestException: #General catch for other errors.
+            raise requests.exceptions.RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
+        else:
             return response
 
 
