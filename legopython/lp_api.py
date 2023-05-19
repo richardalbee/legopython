@@ -1,4 +1,4 @@
-#pylint: disable=line-too-long
+#pylint: disable=line-too-long, consider-using-f-string
 '''
 Handles API calls for other modules.
 '''
@@ -9,6 +9,7 @@ from getpass import getpass
 from pathlib import Path
 from time import time, sleep
 import json
+import sys
 import base64
 from json.decoder import JSONDecodeError
 import requests
@@ -75,10 +76,10 @@ def post_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
     if response.status_code in (valid_statuses or [200, 201, 204]):
         if response.status_code != 204: #No content returned, breaks response.json()
             try:
-                logger.debug(f"Success, HTTP {response.status_code}.")
+                lp_logging.debug(f"Success, HTTP {response.status_code}.")
                 return response.json()
             except JSONDecodeError:  # includes simplejson.decoder.JSONDecodeError
-                logger.debug(f"Success, HTTP {response.status_code}. No Content Returned.")
+                lp_logging.debug(f"Success, HTTP {response.status_code}. No Content Returned.")
                 return {}
         else:
             logger.info("Success, HTTP 204 No Content returned.")
@@ -102,7 +103,7 @@ def put_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
             return response.json()
         else:
             #Changed to logger.info for succinct multithreaded printouts.
-            logger.info(f"Success, HTTP 204 No Content returned.")
+            lp_logging.info(f"Success, HTTP 204 No Content returned.")
             return {}
     else:
         input_headers = kwargs.pop('headers')
@@ -124,7 +125,7 @@ def delete_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
         raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
-def send_http_call(method:str, url:str, valid_statuses:list = None, print_raw_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
+def send_http_call(method:str, url:str, valid_statuses:list = None, print_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
     '''
     Sends an api call via requests.request(method, url, args) and handles errors and retries
 
@@ -139,9 +140,9 @@ def send_http_call(method:str, url:str, valid_statuses:list = None, print_raw_re
     Request Module Exceptions: https://requests.readthedocs.io/en/v3.0.0/_modules/requests/exceptions/ 
     '''
     #TODO: Test this function and simplify this codebase
-    if print_raw_request: #Print the raw request sent for troubleshooting purposes.
+    if print_request: #Print the raw request sent for troubleshooting purposes.
         print_raw_request2(method, url, **kwargs)
-        exit
+        sys.exit()
     
     for retry in range(http_attempts):
         try:
