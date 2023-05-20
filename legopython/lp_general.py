@@ -81,22 +81,3 @@ def read_csv(filename: str, hasheader:bool = False) -> list:
         print(f'{filename} not found, no data loaded.')
         return []
     return [item for sublist in csv_column for item in sublist]
-
-
-tools_settings_dict = {
-    "Environment" : {'config_section_name':'Global','variable_name': "Environment", 'variable_value': '', 'allowed_values': ['prod', 'test']},
-    "Logger_Level" : {'config_section_name':'Global','variable_name': "Logger_Level", 'variable_value': '', 'allowed_values': ['none', 'info', 'debug']},
-    "AWS_Region" : {'config_section_name':'Global','variable_name': "AWS_Region", 'variable_value': '', 'allowed_values': ['us-east-2','us-east-1','us-west-1','us-west-2','af-south-1','ap-east-1','ap-south-2','ap-southeast-3','ap-southeast-4','ap-south-1','ap-northeast-3','ap-northeast-2','ap-southeast-1','ap-southeast-2','ap-northeast-1','ca-central-1','eu-central-1','eu-west-1','eu-west-2','eu-south-1','eu-west-3','eu-north-1','eu-central-2','me-south-1','me-central-1','sa-east-1','us-gov-east-1','us-gov-west-1']}
-    }
-
-
-result = [x['variable_name'] for x in tools_settings_dict.values()]
-print(result)
-#for config_section in list(set([x['variable_name'] for x in tools_settings_dict.values()])):
-    #print(config_section)
-
-
-for key in tools_settings_dict:
-    print(tools_settings_dict[key])
-    print(tools_settings_dict[key]['config_section_name'])
-    break

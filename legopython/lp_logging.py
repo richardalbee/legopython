@@ -1,67 +1,62 @@
 #pylint: disable=line-too-long
-'''legoPython functions related to logging'''
+'''
+Module dedicated to handling how python logs https://docs.python.org/3/howto/logging.html
+
+LOG LEVELS:
+NOTSET
+DEBUG
+INFO
+WARNING
+ERROR
+CRITICAL
+'''
 import sys
-import time
-from pathlib import Path
-import json
 import logging
+from legopython import lp_settings
 
 logger = logging.getLogger("legopython")
 
-def MPAddHandler(level=logging.INFO):
+def __console_log_handler(level=logger.info):
     '''
-    Add the "default" handler for the legopython logger at the INFO level
+    Add the "default" handler for the moxepython logger at the INFO level
     Pass a different log level in for different screen outputs
     '''
-    ch = logging.StreamHandler(sys.stdout) #push log messages to the console
-    ch.setFormatter(logging.Formatter('%(message)s')) #just show messages, not module or time
-    ch.setLevel(level)
-    logger.addHandler(ch)
+    console_config = logging.StreamHandler(sys.stdout) #push log messages to the console
+    console_config.setFormatter(logging.Formatter('%(message)s')) #just show messages, not module or time
+    console_config.setLevel(level)
+    logger.addHandler(console_config)
 
-    if level == logging.DEBUG : #this sets up other debugging functionality
-        MPDebugLogging()
+    if level == logging.DEBUG : #Enable timestamps and showing debug statements if logger set to debug
+        logger.handlers[0].setLevel(logging.DEBUG) #We control this logger, and only have 1 handler set
+        logger.handlers[0].setFormatter(logging.Formatter('%(levelname)-8s: %(module)s:%(funcName)s: %(message)s'))
 
-def MPDebugLogging():
-    '''
-    Function to adjust the to a debug level
-    NOTE -> This assumes a handler already exists, and hasn't been cleared
-    '''
-    logger.handlers[0].setLevel(logging.DEBUG) #We control this logger, and only have 1 handler set
-    logger.handlers[0].setFormatter(logging.Formatter('%(levelname)-8s: %(module)s:%(funcName)s: %(message)s'))
 
-def clearMPDefaultHandler():
-    '''
-    Remove handlers from the logger, needed for scripts that intend to log to files or
-    manage logging in their own logger.
-    WARNING: Calling this without setting up additional handlers results in almost all logging going nowhere
-    '''
-    logger.removeHandler(logger.handlers[0]) #This seems safer than logger.handlers.clear()
-
-def legoPythonLogging():
+def __test_logging():
     logger.debug('debug message')
     logger.info('info message')
     logger.warning('warn message')
     logger.error('error message')
     logger.critical('critical message')
 
-def writeToFileLedger(filename,sourcepath,destpath,receivetime,filesize,fileledgerpath='.') :
-    '''
-    Replicate the file ledger functionality originally present in S3same
-    '''
-    fileledgertimestamp = '%Y-%m-%d %H:%M:%S%z'
-    # prep file
-    ledgerfile = Path(fileledgerpath, 's3same-fileledger-' + time.strftime('%Y-%m-%d') + '.json')
-    if not ledgerfile.is_file() :
-        with open(ledgerfile, 'a') as file :
-            pass
-    logentry = {
-        'TransferTime': time.strftime(fileledgertimestamp),
-        'FileName': str(filename),
-        'SourcePath': str(sourcepath),
-        'DestPath': str(destpath),
-        'ReceiveTime': time.strftime(fileledgertimestamp, time.gmtime(receivetime)),
-        'FileSize': str(filesize)
-    }
-    logger.debug(f'ledgerfile: {ledgerfile}|logentry: {logentry}')
-    with open(ledgerfile, 'a') as f:
-        f.write(json.dumps(logentry) + '\n')
+
+def main():
+    '''Configures log file settings and user experience of console print outs'''
+
+    #Make logger.{type} print to console like normal prints
+    __console_log_handler(lp_settings.LOGGER_LEVEL.upper())
+
+    #Configure how the log file is set up if enabled.
+    if lp_settings.LOG_FILE_ENABLED:
+        #This controls where logger.{type} is printed to and formatting
+        logging.basicConfig(
+            filename = f'{lp_settings.LOG_LOCATION}/log.txt',
+            encoding ='utf-8',
+            level = lp_settings.LOGGER_LEVEL.upper(),
+            format = '%(asctime)s;%(levelname)s;%(message)s',
+            datefmt ='%Y-%m-%d %H:%M:%S'
+            )
+
+    __test_logging()
+
+if __name__ == '__main__':
+    main()
