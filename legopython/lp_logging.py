@@ -1,6 +1,7 @@
 #pylint: disable=line-too-long
 '''
-Module dedicated to handling how python logs https://docs.python.org/3/howto/logging.html
+Settings file for controlling how python logs to console and to file. https://docs.python.org/3/howto/logging.html
+Works in tandem with global variables specified in lp_interface.
 
 LOG LEVELS:
 NOTSET
@@ -13,8 +14,8 @@ CRITICAL
 import sys
 import logging
 from legopython import lp_settings
-
 logger = logging.getLogger("legopython")
+
 
 def __console_log_handler(level=logger.info):
     '''
@@ -32,11 +33,28 @@ def __console_log_handler(level=logger.info):
 
 
 def __test_logging():
+    print('print message')
     logger.debug('debug message')
     logger.info('info message')
     logger.warning('warn message')
     logger.error('error message')
     logger.critical('critical message')
+
+
+
+
+__console_log_handler(lp_settings.LOGGER_LEVEL.upper())
+
+    #Configure how the log file is set up if enabled.
+if lp_settings.LOG_FILE_ENABLED:
+    #This controls where logger.{type} is printed to and formatting
+    logging.basicConfig(
+        filename = f'{lp_settings.LOG_LOCATION}/log.txt',
+        encoding ='utf-8',
+        level = lp_settings.LOGGER_LEVEL.upper(),
+        format = '%(asctime)s;%(levelname)s;%(message)s',
+        datefmt ='%Y-%m-%d %H:%M:%S'
+        )
 
 
 def main():

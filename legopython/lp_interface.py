@@ -1,4 +1,3 @@
-#pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter, consider-iterating-dictionary, logging-fstring-interpolation
 ''' A tool for calling legopython functions.
 
 To add a function to legopython UI, add an entry to support_functions_menu and a if user_input == x: statement.
@@ -11,7 +10,7 @@ import typing
 import subprocess
 import sys
 from external import example
-from legopython import lp_general, lp_settings, lp_awssession
+from legopython import lp_general, lp_settings
 from legopython.lp_logging import logger
 
 
@@ -31,23 +30,30 @@ def prompt_user(question: str) -> str:
         sys.exit()
     return user_input
 
-def prompt_set_environment():
-    '''Prompt user to set the Python global environment'''
-    environment_dict = {
-        1: {'name':'prod'},
-        2: {'name':'qa'},
-        3: {'name':'test'},
-        4: {'name':'int'}
-    }
-    print('0. Return\n')
-    for key,value in environment_dict.items():
-        print(f'{key}: {value["name"]}')
-    user_response = lp_general.prompt_user_int('Enter # for ENV you want to change to', maximum=len(environment_dict))
 
-    if user_response == 0:
+def prompt_set_setting():
+    '''Prompt user to set a global variable'''
+    settings = {
+        1: {'name':'ENVIRONMENT', 'value': lp_settings.ENVIRONMENT},
+        2: {'name':'LOGGER_LEVEL', 'value': lp_settings.LOGGER_LEVEL},
+        3: {'name':'LOG_FILE_ENABLED', 'value': lp_settings.LOG_FILE_ENABLED},
+        4: {'name':'LOG_LOCATION', 'value': lp_settings.LOG_LOCATION},
+        5: {'name':'AWS_REGION', 'value': lp_settings.AWS_REGION}
+    }
+
+    #Print settings dict for user to choose from
+    print('\n0. Return\n')
+    for key, setting_name in settings.items():
+        print(f'{key}: Current {setting_name["name"]} = {setting_name["value"]}')
+    user_setting = lp_general.prompt_user_int('Enter # for setting to change: ', maximum=len(settings))
+
+    if user_setting == 0:
         logger.info(f'Exiting without changing Env. Env currently set to {lp_settings.ENVIRONMENT}')
         return support_functions_menu()
-    lp_settings.set_environment(environment_dict[user_response]['name'])
+
+    #Prompt user setting - lowercase for standardization of user input
+    lp_settings.set_global_setting(setting_name = settings[user_setting]['name'].lower(), new_value = prompt_user(f'Enter new value for {settings[user_setting]["name"]}: ').lower())
+
 
 def prompt_user_string(parameter_name:str):
     '''Prompts user to enter string input, returns string'''
@@ -59,6 +65,7 @@ def prompt_user_string(parameter_name:str):
     if user_input.startswith('"') and user_input.endswith('"'): #Remove ""
         user_input = user_input.replace('"',"")
     return user_input
+
 
 def prompt_user_bool(parameter_name:str):
     '''Prompts user to enter bool input, returns bool'''
@@ -157,7 +164,7 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
             if parameter_dict[parameter] == type(['str','str','str']): #prompt for list
                 user_input = prompt_user_list(parameter_name=parameter)
             if parameter_dict[parameter] == type({"key": "value"}): #prompt for dict, avoid this data input for legopython functions.
-                user_input = prompt_user_list(parameter_name=parameter)
+                user_input = prompt_user_dict(parameter_name=parameter)
             if parameter_dict[parameter] == typing.Union[list, str]:
                 user_input = prompt_user_list(parameter_name=parameter)
 
@@ -171,7 +178,7 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
 
     if prompt:
         print(f'\n {parameter_input} \n')
-        if not lp_general.yesno(question=f"Are you sure you want to run {function_name.__name__} with the parameters above?"):
+        if not lp_general.prompt_user_yesno(question=f"Are you sure you want to run {function_name.__name__} with the parameters above?"):
             return support_functions_menu()
     return parameter_input
 
@@ -179,7 +186,7 @@ def support_functions_menu():
     ''' Prints available functions and allows selection of function in support_functions_dict'''
 
     support_functions_dict = {
-        0   : {'name':f'CURRENT ENV = {lp_settings.ENVIRONMENT}','function':prompt_set_environment,'skip_param':[1]},
+        0   : {'name':f'Change Settings    ENV:{lp_settings.ENVIRONMENT}','function':prompt_set_setting,'skip_param':[]},
         1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple','skip_param':[]},
         2   : {'name':'Example Internal Application Module','function':example.auth_example,'skip_param':[]}
     }
@@ -214,10 +221,7 @@ def support_functions_menu():
 
 def main():
     ''' Start the interface loop for legopython text UI'''
-    if lp_awssession.checkSession():
-        logger.info('AWS session is valid and not expired')
-    else:
-        logger.error('Please re connect to aws: "AWS SSO Login"')
+
     support_functions_menu()
 
 

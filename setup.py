@@ -31,22 +31,7 @@ requires = [
     'lxml',
     'configparser'
 ]
-'''
-entry_points = {
-    'console_scripts': [
-        'moxeS3 = MoxePython:moxeS3.main',
-        'moxepgp = MoxePython:moxepgp.main',
-        'moxeAWS = MoxePython:moxeAWS.main'
-    ]
-}
 
-# Add scripts we want universally accessible to this variable
-# TODO -- add a check that if a file doesn't exist don't include it in the variable
-scripts = [
-    str(Path('OneOffs','example.py')),
-    str(Path('OneOffs','example2.py'))
-    ]
-'''
 scripts = []
 import_folders = ['legopython','scripts','external']
 for folder in import_folders:
@@ -75,5 +60,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3.10'
     ],
     python_requires = '>=3.8',
-    url = "https://github.com/ralbee1/PythonTools"
+    url = "https://github.com/ralbee1/legopython"
 )

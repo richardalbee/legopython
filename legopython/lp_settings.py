@@ -1,4 +1,3 @@
-#pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter, logging-fstring-interpolation, global-statement
 '''Global Settings for legopython
 
 To add a new setting:
@@ -9,8 +8,11 @@ TODO: Add support for non "global" section
 '''
 import os
 import sys
+import logging
 from configparser import ConfigParser
 from pathlib import Path
+if 'legopython' not in logging.Logger.manager.loggerDict.keys():
+    logger = logging.getLogger("legopython")
 
 #local globals
 lp_folder = Path.home().joinpath(".lp")
@@ -19,7 +21,7 @@ pip_credentials_filepath = Path.home().joinpath(".netrc")
 
 #GLOBALS: Initialized values if config file does not exist
 ENVIRONMENT = 'test'
-LOGGER_LEVEL = 'info' #Controls both console and log file logging levels
+LOGGER_LEVEL = 'debug' #Controls both console and log file logging levels
 LOG_FILE_ENABLED = 'false'
 LOG_LOCATION = str(lp_folder)
 AWS_REGION = 'us-east-2'
@@ -55,7 +57,7 @@ def __configparse_get_cache() -> bool:
             print(f"Invalid {settings_dict[setting]['name']} config setting found at {config_filepath}.")
             return False
 
-    #Assign the globals values from cache   
+    #Assign the globals values from cache  
     ENVIRONMENT = settings_dict['Environment']['value']
     LOGGER_LEVEL = settings_dict['Logger_Level']['value']
     LOG_FILE_ENABLED = settings_dict['Log_File_Enabled']['value']
@@ -70,10 +72,11 @@ def __configparse_cache():
     config = ConfigParser()
 
     #If the section does not exist, create it
-    for key,value in settings_dict.items():
+    print('\nCaching new global setting values')
+    for key, value in settings_dict.items():
         if not config.has_section(value['section']):
             config.add_section(value['section'])
-        print(value['section'], value['name'], value['value'])  #logger.debug
+        #logger.info(value['section'], value['name'], value['value'])  #logger.debug
         config.set(value['section'], value['name'], value['value']) #Create the setting in settings file
 
     #Save config file
@@ -81,18 +84,18 @@ def __configparse_cache():
         config.write(configfile)
 
 
-def set_global_setting(global_name:str, new_value:str) -> None:
+def set_global_setting(setting_name:str, new_value:str) -> None:
     '''Update the value of a global setting. Exits after updating to ensure global propagates'''
     valid_aliases = []
     for setting in settings_dict:
         #check to see if a valid global name entered
-        if global_name in settings_dict[setting]['alias']:
-            if new_value.lower() in settings_dict[setting]['allowed_values'] and global_name.lower() != 'log_location':
+        if setting_name in settings_dict[setting]['alias']:
+            if new_value.lower() in settings_dict[setting]['allowed_values'] and setting_name.lower() != 'log_location':
                 settings_dict[setting]['value']=new_value.lower()
                 __configparse_cache()
                 print('Exiting session to force new setting values to all modules')
                 sys.exit()
-            elif global_name.lower() == 'log_location':
+            elif setting_name.lower() == 'log_location':
                 if os.path.isdir(new_value):
                     settings_dict[setting]['value']=new_value.lower()
                     __configparse_cache()
@@ -107,7 +110,7 @@ def set_global_setting(global_name:str, new_value:str) -> None:
         valid_aliases.append(settings_dict[setting]['alias'])
 
     #Valid global name was not entered
-    print(f'\n{global_name}- is not a valid setting. Valid setting are: {valid_aliases}')
+    print(f'\n{setting_name} is not a valid setting name. Valid setting are: {valid_aliases}')
 
 
 def __create_pip_update_credentials():
@@ -122,21 +125,15 @@ def __create_pip_update_credentials():
         #newfile.write(f'password {artifactory_serviceaccount_pw}') #value needs to be API key
 
 
-def main():
-    '''
-    Settings file ran to initialize settings file to globals
-    '''
-    #Check if there is a valid settings file.
-    if __configparse_get_cache():
-        print(f"Successfully loaded file from {config_filepath}")
-    else:
-        #If settings file did not load, initialize/overwrite setting file with defaults.
-        __configparse_cache()
-        #print(f"{config_filepath} created with defaults: ENVIORNMENT={ENVIRONMENT}, logger_level={LOGGER_LEVEL}, AWS_REGION={AWS_REGION}")
 
-    set_global_setting('log_location', r'C:\Users\Ralbee\.lp')
-    #if not pip_credentials_filepath.exists():
-    #    __create_pip_update_credentials()
+#Settings file ran to initialize settings file to globals. No def main since this needs to always load.
+#Check if there is a valid settings file.
+if __configparse_get_cache():
+    print(f"Successfully loaded file from {config_filepath}")
+else:
+    #If settings file did not load, initialize/overwrite setting file with defaults.
+    __configparse_cache()
+    #print(f"{config_filepath} created with defaults: ENVIORNMENT={ENVIRONMENT}, logger_level={LOGGER_LEVEL}, AWS_REGION={AWS_REGION}")
 
-if __name__ == '__main__':
-    main()
+#if not pip_credentials_filepath.exists():
+#    __create_pip_update_credentials()

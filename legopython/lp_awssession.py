@@ -19,10 +19,8 @@ SSO start URL [None]: {SSO Start URL}
 SSO Region [None]: us-east-1
 '''
 import os
-import logging
 import boto3
-
-logger = logging.getLogger('legopython')
+from legopython.lp_logging import logger
 
 def checkSession() -> bool:
     '''validates whether or not the user has a valid session'''
@@ -31,7 +29,7 @@ def checkSession() -> bool:
     except:
         logger.warning("AWS Session invalid, or other issue connecting to AWS, please check your AWS session and network connectivity")
         return False
-    logger.debug('moxeAWS.checkSession found a valid session')
+    logger.debug('Found valid aws session in lp_awssession')
     return True
 
 
