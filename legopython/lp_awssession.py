@@ -5,42 +5,33 @@ To install AWS SSO Login:
 Prerequisites
 Download AWSCLI v2: Installing or updating the latest version of the AWS CLI - AWS Command Line Interface
 
-If you are migrating off of using AWSCLISetup.py:
-
-Browse to your AWS credentials folder (cd ~/.aws)
-
-Rename the files config and credentials with an extension, like .bak , to deactivate them.
-
 Initial setup
 Open terminal session and execute the following:
 
-
 aws configure sso
 If prompted for a SSO start URL, sign into AWS and find your SSO Start URL
-For SSO Region just hit <enter> for SSO session name and ignore warning. After the first time running this, these values should be cached as the default and replace the [None] below, so you should just have to hit <enter> :
-
+For SSO Region just hit <enter> for SSO session name and ignore warning. After the first time running this, 
+these values should be cached as the default and replace the [None] below, so you should just have to hit <enter> :
 
 SSO session name (Recommended):
-←[1mWARNING: Configuring using legacy format (e.g. without an SSO session).
 Consider re-running "configure sso" command and providing a session name.
 SSO start URL [None]: {SSO Start URL}
 SSO Region [None]: us-east-1
-
 '''
 import os
 import logging
 import boto3
 
-logger = logging.getLogger("pythontools")
+logger = logging.getLogger('legopython')
 
 def checkSession() -> bool:
     '''validates whether or not the user has a valid session'''
-    try :
+    try:
         boto3.client('sts').get_caller_identity()
     except:
-        logger.warning("AWS Session invalid, or issue connecting to AWS, please check your AWS session and network connectivity")
+        logger.warning("AWS Session invalid, or other issue connecting to AWS, please check your AWS session and network connectivity")
         return False
-    logger.debug('awssession.checkSession found a valid session')
+    logger.debug('moxeAWS.checkSession found a valid session')
     return True
 
 
@@ -69,7 +60,6 @@ def set_sso_profile() -> boto3.session.Session:
     ) if x is not None))
 
 
-
 class AWSTokenExpiredError(Exception):
     '''Exception raised for a failed token'''
     def __init__(self,message="AWS token is expired. Please refresh your token or session."):
@@ -78,11 +68,10 @@ class AWSTokenExpiredError(Exception):
 
 
 def main() :
-    '''Check to see if a session to AWS is connected.'''
-    if checkSession():
-        logger.info('AWS session is valid and not expired')
-    else:
-        logger.error('Please re connect to aws: "AWS SSO Login"')
+    '''Quick token check!'''
+    if checkSession() :#todo -- add optional parameter to checkSession to give the time of token expiration
+        logger.info('AWS token is valid and not expired')
+
 
 if __name__ == '__main__':
     main()
