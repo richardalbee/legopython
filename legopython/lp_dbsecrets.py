@@ -3,8 +3,6 @@
 Module to assist with connections to  relational databases, currently configured to psycopg2 datbases.
 """
 import psycopg2
-from legopython import lp_awssession
-from legopython.lp_logging import logger
 
 def get_db_conn(dblookupname: str) -> dict:
     """
@@ -63,13 +61,3 @@ def return_generator(cursor, arraysize=1500) :
         if not results :
             break
         yield from results
-
-
-def main():
-    '''Check AWS Session'''
-    if lp_awssession.checkSession() is False :
-        exit(1)
-
-
-if __name__ == '__main__':
-    main()

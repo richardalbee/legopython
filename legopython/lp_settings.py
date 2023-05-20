@@ -1,27 +1,31 @@
 #pylint: disable=line-too-long, consider-using-dict-items, no-value-for-parameter, logging-fstring-interpolation, global-statement
-'''Global Settings for toolsPython
+'''Global Settings for legopython
 
 To add a new setting:
-1. initialize the global variable to the default.
-2. add entry into tools_settings_dict
-3. add logic to cache the variable in __configparse_get_cache
+1. create global variable.
+2. add entry into settings_dict (alias must be unique)
+3. add debug printout for new global in def main()
+TODO: Add support for non "global" section
 '''
 import sys
 from configparser import ConfigParser
 from pathlib import Path
-from legopython.lp_logging import logger
 
+#Initialized values if config file does not exist
 ENVIRONMENT = 'test'
 LOGGER_LEVEL = 'info'
+AWS_REGION = 'us-east-2'
 
-tools_settings_dict = {
-    "Environment" : {'config_section_name':'Global','variable_name': "Environment", 'variable_value': ENVIRONMENT, 'allowed_values': ['prod', 'test']},
-    "Logger_Level" : {'config_section_name':'Global','variable_name': "Logger_Level", 'variable_value': LOGGER_LEVEL, 'allowed_values': ['none', 'info', 'debug']}
-    }
-
-tools_folder = Path.home().joinpath(".legopython")
+tools_folder = Path.home().joinpath(".lp")
 config_filepath = tools_folder.joinpath("settings.ini")
 pip_credentials_filepath = Path.home().joinpath(".netrc")
+
+#dictionary storing all configuration of global settings
+settings_dict = {
+    "Environment" : {'section':'Global','name': "Environment", 'value': ENVIRONMENT, 'alias':['env','environment'], 'allowed_values': ['prod', 'test']},
+    "Logger_Level" : {'section':'Global','name': "Logger_Level", 'value': LOGGER_LEVEL, 'alias':['log','logger','logger_level','logging'], 'allowed_values': ['notset', 'debug', 'info', 'warn', 'error', 'critical']},
+    "AWS_Region" : {'section':'Global','name': "AWS_Region", 'value': AWS_REGION, 'alias':['aws', 'aws_region', 'region'], 'allowed_values': ['us-east-2','us-east-1','us-west-1','us-west-2','af-south-1','ap-east-1','ap-south-2','ap-southeast-3','ap-southeast-4','ap-south-1','ap-northeast-3','ap-northeast-2','ap-southeast-1','ap-southeast-2','ap-northeast-1','ca-central-1','eu-central-1','eu-west-1','eu-west-2','eu-south-1','eu-west-3','eu-north-1','eu-central-2','me-south-1','me-central-1','sa-east-1','us-gov-east-1','us-gov-west-1']}
+    }
 
 
 def __configparse_get_cache() -> bool:
@@ -30,77 +34,92 @@ def __configparse_get_cache() -> bool:
     Return true if the file exists in proper format
     return false if file missing or invalid format
     """
-    global ENVIRONMENT
-    global LOGGER_LEVEL
+    global ENVIRONMENT, LOGGER_LEVEL, AWS_REGION
 
     config = ConfigParser()
     if not config_filepath.exists():
-        logger.debug("Could not find cached environment file at %s", config_filepath)
+        print(f"Could not find cached environment file at {config_filepath}")
         return False
     config.read(config_filepath)
 
-    if config.has_option('Global', 'Environment'): #Copy this structure for a new variable
-        ENVIRONMENT = config.get('Global', 'Environment')
-    else:
-        logger.error("Corrupted or invalid settings file found at %s.", config_filepath)
-        return False
+    for setting in settings_dict:
+        if config.has_option(settings_dict[setting]['section'], settings_dict[setting]['name']):
+            settings_dict[setting]['value'] = config.get(settings_dict[setting]['section'], settings_dict[setting]['name'])
+        else:
+            print(f"Invalid {settings_dict[setting]['name']} config setting found at {config_filepath}.")
+            return False
 
-    if config.has_option('Global', 'Logger_Level'):
-        LOGGER_LEVEL = config.get('Global', 'Logger_Level')
-    else:
-        logger.error("Corrupted or invalid settings file found at %s.", config_filepath)
-        return False
-    #by getting this far all config values were pulled properly.
-    return True
+    ENVIRONMENT = settings_dict['Environment']['value']
+    LOGGER_LEVEL = settings_dict['Logger_Level']['value']
+    AWS_REGION = settings_dict['AWS_Region']['value']
+    return True #All config values properly read
 
 
 def __configparse_cache():
-    """Private function to store environment on disk"""
+    """Private function to save settings to disk"""
     tools_folder.mkdir(exist_ok=True)
     config = ConfigParser()
 
-    for key,value in tools_settings_dict.items():
-        #If the section does not exist, create it
-        if not config.has_section(value['config_section_name']):
-            config.add_section(value['config_section_name'])
-        print(value['config_section_name'], value['variable_name'], value['variable_value'])
-        config.set(value['config_section_name'], value['variable_name'], value['variable_value'])
+    #If the section does not exist, create it
+    for key,value in settings_dict.items():
+        if not config.has_section(value['section']):
+            config.add_section(value['section'])
+        print(value['section'], value['name'], value['value'])  #logger.debug
+        config.set(value['section'], value['name'], value['value']) #Create the setting in settings file
 
-    with open(config_filepath, 'w', encoding='utf-8') as configfile:    # save
+    #Save config file
+    with open(config_filepath, 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
 
-def set_environment(env:str):
-    '''Callable function for setting the global environment variable.'''
+def set_global_setting(global_name:str, new_value:str) -> None:
+    '''Update the value of a global setting. Exits after updating to ensure global propagates'''
 
     #Since a dictionary is not auto updated by the global variable, updating dict
-    if env.lower() in tools_settings_dict['Environment']['allowed_values']:
-        tools_settings_dict['Environment']['variable_value']=env.lower()
-        __configparse_cache()
-    else:
-        logger.error(f'Supported Environments are: {tools_settings_dict["Environment"]["allowed_values"]}')
-        return
+    valid_aliases = []
+    for setting in settings_dict:
+        #check to see if a valid global name entered
+        if global_name in settings_dict[setting]['alias']:
+            if new_value.lower() in settings_dict[setting]['allowed_values']:
+                settings_dict[setting]['value']=new_value.lower()
+                __configparse_cache()
+                print('Exiting session to force new setting values to all modules')
+                sys.exit()
+            else:
+                print(f'Supported {setting} values: {settings_dict[setting]["allowed_values"]}')
+                return
+        valid_aliases.append(settings_dict[setting]['alias'])
 
-    #Force user to exit to ensure new environment variable is pulled by all modules.
-    logger.info('Exiting session to force toolsPython to pull latest environment on restart.')
-    sys.exit()
+    #Valid global name was not entered
+    print(f'\n{global_name} is not a setting. Valid setting are: {valid_aliases}')
 
-def create_pip_update_credentials():
-    '''Creates .netrc file for updating user toolsPython install in home dir.'''
-    #TODO: Artifactory not needed unless we are hosting this somewhere.
+
+def __create_pip_update_credentials():
+    '''Creates .netrc file for autoupdating legopython from artifactory.
+    Used when publishing a pip internally if module is used at a secure workplace.
+
+    #https://pip.pypa.io/en/stable/topics/authentication/'''
     #artifactory_serviceaccount_pw = lp_secretsmanager.get_secret_v2(secret_name='pypi-artifactory-token')
     with open('.netrc', 'w', newline='', encoding='utf-8') as newfile:
         newfile.write('machine toolshealth.jfrog.io\n')
         newfile.write('login pypi-user\n')
         #newfile.write(f'password {artifactory_serviceaccount_pw}') #value needs to be API key
 
-#Set Environment variable from file, else create config file if does not exist.
-if __configparse_get_cache():
-    logger.debug(f"Successfully loaded file from {config_filepath}")
-else:
-    __configparse_cache()
-    logger.debug(f"{config_filepath} created with ENV set to: {ENVIRONMENT} and logger_level set to {LOGGER_LEVEL}")
-logger.debug(f"Environment is set to {ENVIRONMENT}.")
 
-#if not pip_credentials_filepath.exists():
-#    create_pip_update_credentials()
+def main():
+    '''
+    Settings file ran to initialize settings file to globals
+    '''
+    #Check if there is a valid settings file.
+    if __configparse_get_cache():
+        print(f"Successfully loaded file from {config_filepath}")
+    else:
+        #If settings file did not load, initialize/overwrite setting file with defaults.
+        __configparse_cache()
+        print(f"{config_filepath} created with defaults: ENVIORNMENT={ENVIRONMENT}, logger_level={LOGGER_LEVEL}, AWS_REGION={AWS_REGION}")
+
+    #if not pip_credentials_filepath.exists():
+    #    __create_pip_update_credentials()
+
+if __name__ == '__main__':
+    main()

@@ -7,32 +7,17 @@ from enum import Enum
 from functools import wraps
 from getpass import getpass
 from pathlib import Path
-from time import time, sleep
+from time import time
 import json
 import sys
 import base64
-from json.decoder import JSONDecodeError
 import requests
-from legopython.lp_logging import logger
-from . import lp_logging
+
 
 class InvalidStatusReturned(Exception):
     '''No action when an invalid HTTP status is returned.'''
     pass
 
-
-def print_raw_request(requesttype:str, input_url: str, input_headers:dict = None, input_payload:dict = None, input_params:dict = None):
-    """pretty prints raw http requests to console for troubleshooting purposes."""
-
-    req = requests.Request(requesttype, url = input_url, headers = input_headers, data = input_payload, params = input_params)
-    req = req.prepare()
-
-    print('{}\n{}\r\n{}\r\n\r\n{}'.format(
-        '-----------START-----------',
-        req.method + ' ' + req.url,
-        '\r\n'.join('{}: {}'.format(key, value) for key, value in req.headers.items()),
-        req.body,
-    ))
 
 def print_raw_request2(requesttype:str, url: str, **kwargs):
     """pretty prints raw http requests to console for troubleshooting purposes.
@@ -49,80 +34,6 @@ def print_raw_request2(requesttype:str, url: str, **kwargs):
         '\r\n'.join('{}: {}'.format(key, value) for key, value in req.headers.items()),
         req.body,
     ))
-
-
-
-def get_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
-    '''
-    A handler for the get requests module to return JSON and handle any unexpected statuses.
-    Optional: pretty_print = True to print json. Useful for troubleshooting.
-    '''
-    response = requests.get(url, **kwargs)
-
-    if response.status_code in (valid_statuses or [200, 201]):
-        return response.json()
-    input_headers = kwargs.pop('headers')
-    if pretty_print:
-        print_raw_request('GET', url, input_headers)
-    raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-
-
-def post_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
-    '''
-    A handler for the posts requests module to return JSON and handle any unexpected statuses.
-    Optional: pretty_print = True to print json. Useful for troubleshooting.
-    '''
-    response = requests.post(url, **kwargs)
-    if response.status_code in (valid_statuses or [200, 201, 204]):
-        if response.status_code != 204: #No content returned, breaks response.json()
-            try:
-                lp_logging.debug(f"Success, HTTP {response.status_code}.")
-                return response.json()
-            except JSONDecodeError:  # includes simplejson.decoder.JSONDecodeError
-                lp_logging.debug(f"Success, HTTP {response.status_code}. No Content Returned.")
-                return {}
-        else:
-            logger.info("Success, HTTP 204 No Content returned.")
-            return {}
-    else:
-        input_headers = kwargs.pop('headers')
-        input_payload = kwargs.pop('data')
-        if pretty_print:
-            print_raw_request('POST', url, input_headers, input_payload)
-        raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-
-
-def put_api_json(url, valid_statuses=None, pretty_print:bool=False, **kwargs):
-    '''
-    A handler for the put requests module to return JSON and handle any unexpected statuses.
-    Optional: pretty_print = True to print json. Useful for troubleshooting.
-    '''
-    response = requests.put(url,**kwargs)
-    if response.status_code in (valid_statuses or [200, 204]):
-        if response.status_code != 204: #No content returned, breaks response.json()
-            return response.json()
-        else:
-            #Changed to logger.info for succinct multithreaded printouts.
-            lp_logging.info(f"Success, HTTP 204 No Content returned.")
-            return {}
-    else:
-        input_headers = kwargs.pop('headers')
-        input_payload = kwargs.pop('data')
-        if pretty_print: print_raw_request('PUT', url, input_headers, input_payload)
-        raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-
-
-def delete_api_json(url, valid_statuses=None,pretty_print:bool=False, **kwargs):
-    '''
-    A handler for the requests module to return JSON and handle any
-    unexpected statuses. This one is for posts.
-    Optional: pretty_print = True to print json. Useful for troubleshooting.
-    '''
-    response = requests.delete(url,**kwargs)
-    if response.status_code not in (valid_statuses or [204]):
-        input_headers = kwargs.pop('headers')
-        if pretty_print: print_raw_request('DELETE', url, input_headers)
-        raise InvalidStatusReturned("Response from {} returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
 
 
 def send_http_call(method:str, url:str, valid_statuses:list = None, print_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
@@ -147,7 +58,7 @@ def send_http_call(method:str, url:str, valid_statuses:list = None, print_reques
     for retry in range(http_attempts):
         try:
             response = requests.request(method = method, url = url, timeout = timeout, **kwargs)
-            if valid_statuses and response.status_code not in (valid_statuses): #If specific valid statuses are provided, throw error if not valid status.
+            if valid_statuses and response.status_code not in (valid_statuses): #throw error if not valid status.
                 raise InvalidStatusReturned("Returned invalid status from {}, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
         except requests.exceptions.RequestException: #General catch for other errors.
             raise requests.exceptions.RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
@@ -164,7 +75,7 @@ class AuthType(Enum):
     BASIC = 1
     JWT_BEARER = 2
 
-home_folder = Path.home() / ".legopython"
+home_folder = Path.home() / ".lp"
 
 class AuthHandler:
     """Handles authentication for APIs."""
@@ -269,7 +180,8 @@ class AuthHandler:
                     if callable(value):
                         logger.debug("Config item %s for %s is a function, calling function to update value",key,base_key)
                         token_params[base_key][key] = value()
-        return post_api_json(**token_params)
+        print('TODO: Finish developing token auth')
+        #return post_api_json(**token_params)
 
     def get_valid_credentials(self):
         """

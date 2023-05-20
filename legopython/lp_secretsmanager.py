@@ -27,7 +27,7 @@ def get_secret(secret_name: str, region_name = 'us-east-2') -> dict:
             SecretId=secret_name
         )
     except ClientError as e: #Exception list: https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        raise e
+        print(f"Unexpected error: {e}")
     else:
         # Returns secret whether its a string or binary, 'SecretString' or 'SecretBinary' is populated
         if 'SecretString' in get_secret_value_response:

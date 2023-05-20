@@ -7,10 +7,10 @@ from distutils.util import strtobool
 
 logger = logging.getLogger("legopython")
 
-def listdir_path_v2(file) :
+def listdir_path(file:str) :
     '''
-    listdir_path_v2 - Given an input of file, directory, or file glob, return a generator of path objects with their relative paths (excluding directories).
-        This v2 function returns a generator to control resource consumption when dealing with larger sets of files in a directory
+    Given an input of file, directory, or file glob, return a generator of path objects with their relative paths (excluding directories).
+        returns a generator to control resource consumption when dealing with larger sets of files in a directory
         file - The file/directory/glob to use in creating the list
     '''
     fpath = Path(file)
@@ -27,7 +27,7 @@ def listdir_path_v2(file) :
         yield from [ f for f in Path(fpath.parent).glob(fpath.name) if f.is_file() ]
 
 
-def yesno(question, default='no') :
+def prompt_user_yesno(question, default='no') :
     if default == 'yes' :
         prompt = ' [Y/n] '
     elif default == 'no':
@@ -81,3 +81,22 @@ def read_csv(filename: str, hasheader:bool = False) -> list:
         print(f'{filename} not found, no data loaded.')
         return []
     return [item for sublist in csv_column for item in sublist]
+
+
+tools_settings_dict = {
+    "Environment" : {'config_section_name':'Global','variable_name': "Environment", 'variable_value': '', 'allowed_values': ['prod', 'test']},
+    "Logger_Level" : {'config_section_name':'Global','variable_name': "Logger_Level", 'variable_value': '', 'allowed_values': ['none', 'info', 'debug']},
+    "AWS_Region" : {'config_section_name':'Global','variable_name': "AWS_Region", 'variable_value': '', 'allowed_values': ['us-east-2','us-east-1','us-west-1','us-west-2','af-south-1','ap-east-1','ap-south-2','ap-southeast-3','ap-southeast-4','ap-south-1','ap-northeast-3','ap-northeast-2','ap-southeast-1','ap-southeast-2','ap-northeast-1','ca-central-1','eu-central-1','eu-west-1','eu-west-2','eu-south-1','eu-west-3','eu-north-1','eu-central-2','me-south-1','me-central-1','sa-east-1','us-gov-east-1','us-gov-west-1']}
+    }
+
+
+result = [x['variable_name'] for x in tools_settings_dict.values()]
+print(result)
+#for config_section in list(set([x['variable_name'] for x in tools_settings_dict.values()])):
+    #print(config_section)
+
+
+for key in tools_settings_dict:
+    print(tools_settings_dict[key])
+    print(tools_settings_dict[key]['config_section_name'])
+    break
