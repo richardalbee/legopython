@@ -9,7 +9,7 @@ import types
 import typing
 import subprocess
 import sys
-from external import example
+#from external import example
 from legopython import lp_general, lp_settings
 from legopython.lp_logging import logger
 
@@ -48,7 +48,7 @@ def prompt_set_setting():
     user_setting = lp_general.prompt_user_int('Enter # for setting to change: ', maximum=len(settings))
 
     if user_setting == 0:
-        logger.info(f'Exiting without changing Env. Env currently set to {lp_settings.ENVIRONMENT}')
+        logger.info('Exiting without changing settings.')
         return support_functions_menu()
 
     #Prompt user setting - lowercase for standardization of user input

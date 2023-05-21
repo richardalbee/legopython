@@ -15,6 +15,7 @@ from legopython import (
     lp_secretsmanager,
     lp_settings
 )
+from legopython.__metadata__ import __description__, __license__, __title__, __version__
 
 __all__ = [
     "lp_api",
@@ -27,6 +28,10 @@ __all__ = [
     "lp_postgresql",
     "lp_s3",
     "lp_secretsmanager",
-    "lp_settings"
+    "lp_settings",
+    "__description__",
+    "__license__",
+    "__title__",
+    "__version__",
 ]
 #_logging.getLogger("legopython").addHandler(_logging.NullHandler())

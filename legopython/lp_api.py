@@ -1,6 +1,7 @@
 #pylint: disable=line-too-long, consider-using-f-string
 '''
 Handles API calls for other modules.
+APIS to test against https://github.com/toddmotto/public-apis
 '''
 
 from enum import Enum
@@ -20,14 +21,14 @@ class InvalidStatusReturned(Exception):
     pass
 
 
-def print_raw_request2(requesttype:str, url: str, **kwargs):
+def print_raw_request(requesttype:str, url: str, **kwargs):
     """pretty prints raw http requests to console for troubleshooting purposes.
     requesttype = HTTP Method, enter one of: delete, get, post, patch, head, put
     url = Address to send the api request
     **Kwargs accepts the following key-value pairs: #TODO: list all valid params here
     """
 
-    req = requests.Request(requesttype = requesttype, url = url, **kwargs)
+    req = requests.Request(method = requesttype, url = url, **kwargs)
     req = req.prepare()
     print('{}\n{}\r\n{}\r\n\r\n{}'.format(
         '-----------START-----------',
@@ -53,7 +54,7 @@ def send_http_call(method:str, url:str, valid_statuses:list = None, print_reques
     '''
     #TODO: Test this function and simplify this codebase
     if print_request: #Print the raw request sent for troubleshooting purposes.
-        print_raw_request2(method, url, **kwargs)
+        print_raw_request(method, url, **kwargs)
         sys.exit()
     
     for retry in range(http_attempts):
@@ -75,8 +76,9 @@ class AuthType(Enum):
     """
     BASIC = 1
     JWT_BEARER = 2
+    OAUTH2 = 3
 
-home_folder = Path.home() / ".lp"
+home_folder = Path.home()/".lp"
 
 class AuthHandler:
     """Handles authentication for APIs."""
@@ -181,8 +183,22 @@ class AuthHandler:
                     if callable(value):
                         logger.debug("Config item %s for %s is a function, calling function to update value",key,base_key)
                         token_params[base_key][key] = value()
-        print('TODO: Finish developing token auth')
-        #return post_api_json(**token_params)
+        return send_http_call(method='post', **token_params)
+
+
+    def _request_oauth2_token(self):
+        """
+        Calls to get an oauth2 token using basic auth. #TODO THIS IS NOT WORKING, working on example_api_oauth2.
+        """
+        token_params = self.env_config.get(self.env).get("token_params")
+        for base_key,base_value in token_params.items():
+            if isinstance(base_value,dict):
+                for key,value in base_value.items():
+                    if callable(value):
+                        logger.debug("Config item %s for %s is a function, calling function to update value",key,base_key)
+                        token_params[base_key][key] = value()
+        return send_http_call(method='post', **token_params)
+
 
     def get_valid_credentials(self):
         """
@@ -191,7 +207,7 @@ class AuthHandler:
         """
         now = int(time())
         if self.credentials is None:
-            logger.debug("Trying to get cached credentials")
+            logger.debug("Beginning loading of cached credentials")
             self.credentials = self._get_cached_credentials()
         if self.credentials is None or (self.credentials.get('expiry') and self.credentials.get('expiry',0) <= now):
             logger.debug('Getting new authentication credentials')
@@ -202,6 +218,12 @@ class AuthHandler:
                 self.credentials["auth_header"] = f"Basic {self._credentials.get('credstring')}"
             elif self.auth_type == AuthType.JWT_BEARER:
                 self.credentials = self._request_token()
+                self.credentials['expiry'] = now + self._credentials.get('expires_in',3600)
+                self.credentials['auth_header'] = f"Bearer {self._credentials.get('access_token')}"
+            elif self.auth_type == AuthType.OAUTH2:
+                self.credentials["username"], self._credentials["credstring"] = self._get_basic_auth_credentials()
+                self.credentials["auth_header"] = f"Basic {self._credentials.get('credstring')}"
+                self.credentials = self._request_oauth2_token()
                 self.credentials['expiry'] = now + self._credentials.get('expires_in',3600)
                 self.credentials['auth_header'] = f"Bearer {self._credentials.get('access_token')}"
         self._cache_credentials()
