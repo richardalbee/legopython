@@ -76,7 +76,7 @@ class AuthType(Enum):
     """
     BASIC = 1
     JWT_BEARER = 2
-    OAUTH2 = 3
+    OAUTH2 = 3 #TODO THIS DOES NOT WORK
 
 home_folder = Path.home()/".lp"
 
@@ -220,7 +220,7 @@ class AuthHandler:
                 self.credentials = self._request_token()
                 self.credentials['expiry'] = now + self._credentials.get('expires_in',3600)
                 self.credentials['auth_header'] = f"Bearer {self._credentials.get('access_token')}"
-            elif self.auth_type == AuthType.OAUTH2:
+            elif self.auth_type == AuthType.OAUTH2: #TODO THIS DOES NOT WORK
                 self.credentials["username"], self._credentials["credstring"] = self._get_basic_auth_credentials()
                 self.credentials["auth_header"] = f"Basic {self._credentials.get('credstring')}"
                 self.credentials = self._request_oauth2_token()
