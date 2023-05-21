@@ -12,6 +12,7 @@ import json
 import sys
 import base64
 import requests
+from legopython.lp_logging import logger
 
 
 class InvalidStatusReturned(Exception):

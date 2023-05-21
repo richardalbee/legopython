@@ -11,8 +11,7 @@ import sys
 import logging
 from configparser import ConfigParser
 from pathlib import Path
-if 'legopython' not in logging.Logger.manager.loggerDict.keys():
-    logger = logging.getLogger("legopython")
+logger = logging.getLogger("legopython")
 
 #local globals
 lp_folder = Path.home().joinpath(".lp")
