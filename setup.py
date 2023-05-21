@@ -19,16 +19,10 @@ import setuptools
 requires = [
     'boto3',
     'credstash',
-    'PGPy',
-    'paramiko',
-    'pyyaml',
     'psycopg2-binary',
     'requests',
     'pandas',
     'numpy',
-    'openpyxl',
-    'pyjwt',
-    'lxml',
     'configparser'
 ]
 
