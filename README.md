@@ -1,23 +1,9 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
 
 
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+<!-- LegoPython -->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -60,6 +46,7 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#Features">Features</a></li>
       </ul>
     </li>
     <li>
@@ -82,20 +69,28 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
+<!-- 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info.
+-->
+LegoPython was concieved to facilitate and standardize internal tooling efforts, supporting hundreds of internal scripts and multiple internal applications. LegoPython embodies component-based development; by developing and iterating upon reusable modules, we have more building blocks to use in the future. This template is stripped down to the core, nonpropriatary, application-level features.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
 ### Built With
-Python
+
 * [![Python][python.org]][python-url]
-<br />PyPi
-* [![PyPi][pypi.org]][pypi-url]
+* [![PyPi][pypi.org]][pypi-url] PyPi
+
+
+### Features
+
+- [ ] Feature 1
+- [ ] Feature 2
+- [ ] Feature 3
+    - [ ] Nested Feature
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
