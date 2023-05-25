@@ -1,17 +1,14 @@
 '''A place to store legoPython functions that have general usability across modules, but aren't necessarily specific to any one module'''
-#pylint: disable=line-too-long
 import csv
 from pathlib import Path
-import logging
 from distutils.util import strtobool
+from legopython.lp_logging import logger
 
-logger = logging.getLogger("legopython")
 
-def listdir_path(file:str) :
-    '''
-    Given an input of file, directory, or file glob, return a generator of path objects with their relative paths (excluding directories).
-        returns a generator to control resource consumption when dealing with larger sets of files in a directory
-        file - The file/directory/glob to use in creating the list
+def listdir_path(file:str):
+    '''Given an input of file, directory, or file glob, return a generator of path objects with their relative paths (excluding directories).
+    returns a generator to control resource consumption when dealing with larger sets of files in a directory
+    file - The file/directory/glob to use in creating the list
     '''
     fpath = Path(file)
     if fpath.is_dir() :
@@ -67,7 +64,7 @@ def prompt_user_int(question: str, maximum:int, minimum:int = 0) -> int:
             exit()
 
 
-def read_csv(filename: str, hasheader:bool = False) -> list:
+def read_1col_csv(filename: str, hasheader:bool = False) -> list:
     '''read a 1 column csv without headers from file, return list.
     hasheader = True removes the first line.
     '''

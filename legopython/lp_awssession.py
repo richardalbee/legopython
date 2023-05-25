@@ -3,39 +3,53 @@
 To install AWS SSO Login:
 
 Prerequisites
-Download AWSCLI v2: Installing or updating the latest version of the AWS CLI - AWS Command Line Interface
+Download AWSCLI v2
 
 Initial setup
 Open terminal session and execute the following:
 
-aws configure sso
-If prompted for a SSO start URL, sign into AWS and find your SSO Start URL
-For SSO Region just hit <enter> for SSO session name and ignore warning. After the first time running this, 
-these values should be cached as the default and replace the [None] below, so you should just have to hit <enter> :
+aws configure sso:
+    If prompted for a SSO start URL, sign into AWS and find your SSO Start URL.
+    For SSO Region just hit <enter> After the initial configuration, these values should be cached as the default and replace the [None] below.
 
-SSO session name (Recommended):
-Consider re-running "configure sso" command and providing a session name.
-SSO start URL [None]: {SSO Start URL}
-SSO Region [None]: us-east-1
+Example Prompts:
+    SSO session name (Recommended):
+    SSO start URL [None]: {SSO Start URL}
+    SSO Region [None]: us-east-2
 '''
 import os
+import botocore.exceptions as bexcept
 import boto3
 from legopython.lp_logging import logger
 
-def checkSession() -> bool:
-    '''validates whether or not the user has a valid session'''
-    try:
-        boto3.client('sts').get_caller_identity()
-    except:
-        logger.warning("AWS Session invalid, or other issue connecting to AWS, please check your AWS session and network connectivity")
-        return False
-    logger.debug('Found valid aws session in lp_awssession')
-    return True
+
+def check_session() -> bool:
+    '''Validates whether configured AWS session(s) are valid.'''
+    #We are ASSUMING the user has a default AWS profile able to get the list of profile.
+    session = boto3.Session()
+    profiles = session.available_profiles
+
+    for profile in profiles:
+        session = boto3.Session(profile_name=profile, region_name='us-east-2')
+        sts = session.client('sts')
+        try:
+            account = sts.get_caller_identity()['Account']
+            logger.info(f'{profile}, {account}')
+        except bexcept.NoCredentialsError:
+            logger.warning(f'{profile},--- no credentials --')
+            return False
+        except bexcept.InvalidConfigError:
+            logger.warning(f'{profile},--- invalid config --')
+            return False
+        except Exception as exc:
+            logger.warning(f'{profile},--- exception --: {exc}')
+            return False
+        logger.debug('Found valid aws session in lp_awssession.')
+        return True
 
 
 def set_sso_profile() -> boto3.session.Session:
-    '''
-    Sets credentials for the AWS session based on environment variables:
+    '''Sets credentials for the AWS session based on environment variables:
     - If PYTHON_ROLE_ARN is set, the session attempts to assume a role
     - If PYTHON_AWS_PROFILE is set, it uses that AWS profile
     - If neither are set, then it uses default profile
@@ -67,8 +81,8 @@ class AWSTokenExpiredError(Exception):
 
 def main() :
     '''Quick token check!'''
-    if checkSession() :#todo -- add optional parameter to checkSession to give the time of token expiration
-        logger.info('AWS token is valid and not expired')
+    if check_session():
+        print('AWS token is valid and not expired')
 
 
 if __name__ == '__main__':

@@ -1,15 +1,14 @@
-#pylint: disable=line-too-long
-'''
-Settings file for controlling how python logs to console and to file. https://docs.python.org/3/howto/logging.html
-Works in tandem with global variables specified in lp_interface.
+'''Module Configuring how legoPython logs with global settings in lp_settings.
+ https://docs.python.org/3/howto/logging.html
 
-LOG LEVELS:
-NOTSET
-DEBUG
-INFO
-WARNING
-ERROR
-CRITICAL
+Console prints the lowest level set in lp_settings.LOGGER_LEVEL
+
+0: NOTSET,
+10: DEBUG
+20: INFO
+30: WARNING
+40: ERROR
+50: CRITICAL
 '''
 import sys
 import logging
@@ -18,8 +17,7 @@ logger = logging.getLogger("legopython")
 
 
 def __console_log_handler(level=logger.info):
-    '''
-    Add the "default" handler for the moxepython logger at the INFO level
+    '''Add the "default" handler for the moxepython logger at the INFO level
     Pass a different log level in for different screen outputs
     '''
     console_config = logging.StreamHandler(sys.stdout) #push log messages to the console
@@ -41,13 +39,12 @@ def __test_logging():
     logger.critical('critical message')
 
 
-
-
+#Configures how console print outs through std.out'''
 __console_log_handler(lp_settings.LOGGER_LEVEL.upper())
 
-    #Configure how the log file is set up if enabled.
+#Configure how the log file is set up if enabled.
 if lp_settings.LOG_FILE_ENABLED:
-    #This controls where logger.{type} is printed to and formatting
+    #This controls what logger.{type} is printed and how the log file is formatted.
     logging.basicConfig(
         filename = f'{lp_settings.LOG_LOCATION}/log.txt',
         encoding ='utf-8',
@@ -55,26 +52,3 @@ if lp_settings.LOG_FILE_ENABLED:
         format = '%(asctime)s;%(levelname)s;%(message)s',
         datefmt ='%Y-%m-%d %H:%M:%S'
         )
-
-
-def main():
-    '''Configures log file settings and user experience of console print outs'''
-
-    #Make logger.{type} print to console like normal prints
-    __console_log_handler(lp_settings.LOGGER_LEVEL.upper())
-
-    #Configure how the log file is set up if enabled.
-    if lp_settings.LOG_FILE_ENABLED:
-        #This controls where logger.{type} is printed to and formatting
-        logging.basicConfig(
-            filename = f'{lp_settings.LOG_LOCATION}/log.txt',
-            encoding ='utf-8',
-            level = lp_settings.LOGGER_LEVEL.upper(),
-            format = '%(asctime)s;%(levelname)s;%(message)s',
-            datefmt ='%Y-%m-%d %H:%M:%S'
-            )
-
-    __test_logging()
-
-if __name__ == '__main__':
-    main()

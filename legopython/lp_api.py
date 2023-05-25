@@ -10,24 +10,18 @@ from getpass import getpass
 from pathlib import Path
 from time import time
 import json
-import sys
 import base64
 import requests
 from legopython.lp_logging import logger
 
 
-class InvalidStatusReturned(Exception):
-    '''No action when an invalid HTTP status is returned.'''
-    pass
-
-
 def print_raw_request(requesttype:str, url: str, **kwargs):
-    """pretty prints raw http requests to console for troubleshooting purposes.
+    """Prints raw http requests to console for troubleshooting purposes.
+
     requesttype = HTTP Method, enter one of: delete, get, post, patch, head, put
     url = Address to send the api request
-    **Kwargs accepts the following key-value pairs: #TODO: list all valid params here
+    **Kwargs accepts params for send_http_call
     """
-
     req = requests.Request(method = requesttype, url = url, **kwargs)
     req = req.prepare()
     print('{}\n{}\r\n{}\r\n\r\n{}'.format(
@@ -38,40 +32,43 @@ def print_raw_request(requesttype:str, url: str, **kwargs):
     ))
 
 
-def send_http_call(method:str, url:str, valid_statuses:list = None, print_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
-    '''
-    Sends an api call via requests.request(method, url, args) and handles errors and retries
+def send_http_call(method:str, url:str, print_request:bool = False, timeout:int = 1000, http_attempts:int = 1, **kwargs) -> requests:
+    '''Sends an api call via requests.request(method, url, args) and handles errors and retries
 
     method = HTTP Method, enter one of: delete, get, post, patch, head, put, 
     url = String Address to send the api request
-    valid_statuses = Throws an error or will retry if one of these http statuses is not provided. List of ints
     Timeout = Time in ms to wait for a response. ex) 500 = 0.5 seconds
-    http_attempts = How many times you will attempt to retry and get a response, must be equal to or higher than 1, whole number.
-
+    http_attempts = Whole int number of times to attempt to retry and get a response if the request times out.
     **Kwargs accepts values for the following dictionary keys: data, params, headers, cookies, files, auth, allow_redirects, proxies, hooks, stream, verify, cert, json 
 
-    Request Module Exceptions: https://requests.readthedocs.io/en/v3.0.0/_modules/requests/exceptions/ 
+    Request Module Exceptions: https://github.com/kennethreitz/requests/blob/master/requests/exceptions.py
     '''
-    #TODO: Test this function and simplify this codebase
-    if print_request: #Print the raw request sent for troubleshooting purposes.
+    #Print the raw request sent for troubleshooting purposes.
+    if print_request:
         print_raw_request(method, url, **kwargs)
-        sys.exit()
     
+    #Make an API call as specified, retrying failures and raising exceptions for invalid statuses as specified.
     for retry in range(http_attempts):
         try:
             response = requests.request(method = method, url = url, timeout = timeout, **kwargs)
-            if valid_statuses and response.status_code not in (valid_statuses): #throw error if not valid status.
-                raise InvalidStatusReturned("Returned invalid status from {}, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
-        except requests.exceptions.RequestException: #General catch for other errors.
-            raise requests.exceptions.RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content))
+            response.raise_for_status()
+        except requests.exceptions.ConnectTimeout:
+            logger.info(f'API Attempt #{retry} Timed out while trying to connect to server.')
+            continue
+        except requests.exceptions.ReadTimeout:
+            logger.info(f'API Attempt #{retry}. Server did not send data in alotted time.')
+            continue
+        except requests.exceptions.HTTPError:
+            logger.debug(f'API Attempt #{retry} returned http code {response.status_code}.')
+            continue
+        except requests.exceptions.RequestException as general_error: #General catch for other errors.
+            raise requests.exceptions.RequestException("Response from {} errored, returned status code {}: {} \n{}".format(response.url, response.status_code, response.reason, response.content)) from general_error
         else:
             return response
-
-
+    
 
 class AuthType(Enum):
-    """
-    Different authentication types supported by the AuthHandler.
+    """Different authentication types supported by the AuthHandler.
     https://www.geeksforgeeks.org/authentication-using-python-requests/
     """
     BASIC = 1

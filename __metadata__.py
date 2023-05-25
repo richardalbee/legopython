@@ -1,6 +1,6 @@
 """Metadata Module.
 Source repository: https://github.com/ralbee1/legopython
-Documentation: https://github.com/ralbee1/legopython TODO: AWS SDK
+Documentation: https://github.com/ralbee1/legopython
 """
 
 __title__: str = "legopython"

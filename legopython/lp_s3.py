@@ -1,8 +1,4 @@
-#pylint: disable=line-too-long
-'''
-S3
-
- module to interact with AWS S3.
+'''Module to interact with AWS S3.
 
 Examples:
 
@@ -309,8 +305,6 @@ def copyFileInS3(s3urlfrom, s3urlto, delete=False, rename = False) :
     archive (opt)
     fdw_callback (opt) - perform a callback using FDW metadata in the s3 key to show file was delivered (as if it had gone through FDW)
     rename (opt) - s3urlto contains full s3 path and filename
-    
-    TODO - This function should support a "rename" mode where the s3urlto us used literally as the destination and not the folder location
     '''
 
     bucket_from = return_s3bucket(s3urlfrom)
@@ -504,58 +498,6 @@ def main() :
     if lp_awssession.checkSession() is False :
         logger.error('AWS Session is not valid, please renew token or check credentials')
         exit(1)
-    #Import parameters (https://docs.python.org/3/library/argparse.html)
-    parametersParser = argparse.ArgumentParser(description='Used to download or upload files for AWS S3')
-    #All variations of S3 require two parameters, but they're different depending on what is being done, give them generic names
-    parametersParser.add_argument('FirstArgument', help = '1st parameter needs to be either an S3URL, a single file, a directory, or a file glob')
-    parametersParser.add_argument('SecondArgument', help = '2nd parameter can be either an S3URL, or a download location')
-    #Add optional parameters as well
-    parametersParser.add_argument('--delete', help = 'Delete file after processing', default = False, action="store_true") #Because this is deletion, don't give a short param for this
-    parametersParser.add_argument('-w', '--workers', help = 'For multi-threaded actions, how many workers to use', type=int, default=30)
-    parametersParser.add_argument('-d', '--debug', help = 'Set logging to DEBUG to show debug log messages', default = False, action="store_true")
-    parametersParser.add_argument('-l', '--ledger', help = 'store files in a file ledger in the current working directory', default = False, action="store_true")
-
-    parameters = parametersParser.parse_args()
-
-    lp_logging.MPAddHandler()
-
-    if parameters.debug :
-        lp_logging.MPDebugLogging()
-
-    if parameters.ledger : #For easy coding, just store the fileledger in the local directory
-        fileLedger = '.'
-    else :
-        fileLedger = None
-
-    #See if we got an S3 URL explicitly for the first or second parameters, since this is cheap to check and very accurate for intention
-    if parameters.FirstArgument[0:5].lower() == "s3://" :
-        if parameters.SecondArgument[0:5].lower() == "s3://" : #First and second arguments are s3 URLs, so we know we're copying between S3 locs
-            copyFilesInS3(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete)
-            sys.exit()
-        suffix = ''
-        if '*' in parameters.FirstArgument.rsplit('/', 1)[1] : #If the asterisk is anywhere else, don't accomodate that here
-            suffix = parameters.FirstArgument.rsplit('/', 1)[1][1:] #Suffix can't include the asterisk, remove it with [1:]
-            parameters.FirstArgument = parameters.FirstArgument.rsplit('/', 1)[0] + '/' #add the forward slash back in, as it's removed in the .split()
-        getS3Files(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete, suffix=suffix, fileLedger=fileLedger)
-        sys.exit()
-    elif parameters.SecondArgument[0:5].lower() == "s3://" :
-        sendFilesToS3(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete, poolWorkers=parameters.workers, fileLedger=fileLedger)
-        sys.exit()
-
-    FAPath = Path(parameters.FirstArgument) #Create a Path object to make checking the first 3 conditions easier
-    if FAPath.is_dir() or FAPath.is_file() :
-        sendFilesToS3(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete, poolWorkers=parameters.workers, fileLedger=fileLedger)
-    elif "*" in FAPath.name and len(list(Path(FAPath.parent).glob(FAPath.name))) > 0 : #rely on short-circuited AND to prevent the 2nd call from throwing an exeption
-        sendFilesToS3(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete, poolWorkers=parameters.workers, fileLedger=fileLedger)
-    elif s3.meta.client.head_bucket(Bucket=parameters.SecondArgument.split('/')[0]) : #Do a small amount of due diligence to see if the S3 bucket actually exists #TODO - this throws an exception so we need to catch cleanly when a bucket doesn't exist
-        #If there's an asterisk, turn this into a suffix for download
-        suffix = ''
-        if '*' in parameters.FirstArgument.rsplit('/', 1)[1] : #If the asterisk is anywhere else, don't accomodate that here
-            suffix = parameters.FirstArgument.rsplit('/', 1)[1][1:] #Suffix can't include the asterisk, remove it with [1:]
-            parameters.FirstArgument = parameters.FirstArgument.rsplit('/', 1)[0] + '/' #add the forward slash back in, as it's removed in the .split()
-        getS3Files(parameters.FirstArgument, parameters.SecondArgument, delete=parameters.delete, suffix=suffix, fileLedger=fileLedger)
-    else :
-        logger.warning("we're unable to determine what to do with the parameters passed, please double check you've\npassed in either an S3 URL for an existing bucket, a directory, a file, or a fileglob as the first parameter")
 
 if __name__ == '__main__':
     main()

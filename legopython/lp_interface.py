@@ -1,7 +1,19 @@
-''' A tool for calling legopython functions.
+'''A CLI interface for calling legopython functions.
 
-To add a function to legopython UI, add an entry to support_functions_menu and a if user_input == x: statement.
-Any function added must have type hinting on every parameter or have those parameters missing type hinting skipped.
+To add a function to legopython UI, add an entry to support_functions_dict in support_functions_menu
+
+Functions added to the legopython UI should follow the following formatting:
+Parameter type hints are required for the interface to work. Docstrings are printed to console.
+
+def functname(arg1:{vartype}, arg2:{vartype}, arg3:{vartype}) -> {responsetype}:
+    """A short summary of the function
+
+    arg1: arg1 description and usecase
+    arg2: arg2 description and usecase
+    arg3: arg3 description and usecase
+
+    example) functname(arg1,arg2,arg3)
+    """
 '''
 import ast
 import time
@@ -9,7 +21,6 @@ import types
 import typing
 import subprocess
 import sys
-#from external import example
 from legopython import lp_general, lp_settings
 from legopython.lp_logging import logger
 
@@ -58,8 +69,11 @@ def prompt_set_setting():
 def prompt_user_string(parameter_name:str):
     '''Prompts user to enter string input, returns string'''
     user_input = prompt_user(f"Enter input for {parameter_name}: ")
+    #If user chooses to enter nothing, skip.
     if user_input == '':
         return user_input
+    
+    #If user appended their own quotes, remove extra quotes.
     if user_input.startswith("'") and user_input.endswith("'"): #Remove ''
         user_input = user_input.replace("'","")
     if user_input.startswith('"') and user_input.endswith('"'): #Remove ""
@@ -68,16 +82,21 @@ def prompt_user_string(parameter_name:str):
 
 
 def prompt_user_bool(parameter_name:str):
-    '''Prompts user to enter bool input, returns bool'''
+    '''Prompts user to enter bool input as string, returns bool'''
     valid_input = False
     while valid_input is False:
         user_input = prompt_user(f"Enter true/false or y/n for {parameter_name}: ")
+        #If user chooses to enter nothing, skip.
         if user_input == '':
             valid_input = True
+        
+        #If user appended their own quotes, remove extra quotes.
         if user_input.startswith("'") and user_input.endswith("'"): #Remove ''
             user_input = user_input.replace("'","")
         if user_input.startswith('"') and user_input.endswith('"'): #Remove ""
             user_input = user_input.replace('"',"")
+        
+        #Parse user string response to true or false.
         if user_input.lower() in ('y', 'true'):
             user_input = True
             valid_input = True
@@ -88,13 +107,16 @@ def prompt_user_bool(parameter_name:str):
             print(f'Please enter true/false or y/n for {parameter_name}')
     return user_input
 
+
 def prompt_user_int(parameter_name:str):
     '''Prompts user to enter int, returns int'''
     valid_input = False
     while valid_input is False:
         user_input = prompt_user(f'Enter whole number for {parameter_name}: ')
+        #If user chooses to enter nothing, skip.
         if user_input == '':
             valid_input = True
+
         if user_input.isdigit():
             user_input = int(user_input)
             valid_input = True
@@ -102,32 +124,38 @@ def prompt_user_int(parameter_name:str):
             print(f'Please enter value for {parameter_name} in "7" or "100" format')
     return user_input
 
+
 def prompt_user_list(parameter_name:str):
     '''Prompts user to enter list input, returns list'''
     valid_input = False
     while valid_input is False:
         user_input = prompt_user(f"Enter input for {parameter_name} as ['str','str'] or filename of a headerless 1 column CSV as 'excelfilename.csv': ")
+        #If user chooses to enter nothing, skip.
         if user_input == '':
             valid_input = True
+
+        #Parse user input with brackets as list and check for a provided csv.
         if user_input.startswith('[') and user_input.endswith(']'):
             user_input = ast.literal_eval(user_input)
             valid_input = True
-        elif user_input.endswith('.csv'):
-            user_input = lp_general.read_csv(user_input, hasheader = False)
+        if user_input.endswith('.csv'):
+            user_input = lp_general.read_1col_csv(user_input, hasheader = False)
             valid_input = True
 
         if valid_input is not True:
             print(f"Please enter value for {parameter_name} as list ['str','str'] or excelfilename.csv")
-
     return user_input
+
 
 def prompt_user_dict(parameter_name:str):
     '''Prompts user to enter dict input, returns dict'''
     valid_input = False
     while valid_input is False:
         user_input = prompt_user(f'f"Enter input for parameter for {parameter_name} in dict format {"key": "value", "key": "value"}')
+        #If user chooses to enter nothing, skip.
         if user_input == '':
             valid_input = True
+        
         if user_input.startswith('{') and user_input.endswith('}'):
             user_input = ast.literal_eval(user_input)
             valid_input = True
@@ -135,8 +163,10 @@ def prompt_user_dict(parameter_name:str):
             print(f'Please enter value for {parameter_name} in dict format {"key": "value", "key": "value"}')
     return user_input
 
-def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict:
-    '''Prompt user for each parameter of {function_name}, do not format as a string
+def prompt_user_parameters(function_name:types.FunctionType, skip_params:list, prompt=True) -> dict:
+    '''Prompt user for each parameter of {function_name} for use with support_functions_dict. 
+    
+    function name: Name of function, supports calling from other modules
     Allows skipping params in list of ints format. [int,int,int]
     '''
     parameter_dict = list_function_parameters(function_name)
@@ -145,7 +175,8 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
     for count, parameter in enumerate(parameter_dict):
         if count not in skip_params:
             all_params_skipped = False
-    if all_params_skipped: #skip asking for params if all parameters are skipped
+    #skip asking for params if all parameters are skipped
+    if all_params_skipped:
         return {}
 
     print('\n')
@@ -155,15 +186,16 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
     for count, parameter in enumerate(parameter_dict):
         if count not in skip_params:
 
-            if parameter_dict[parameter] == type('string'): #prompt for a string
+            #Prompt user for the type listed in the parameter's typehint.
+            if parameter_dict[parameter] == type('string'):
                 user_input = prompt_user_string(parameter)
-            if parameter_dict[parameter] == type(False): #prompt for bool
+            if parameter_dict[parameter] == type(False):
                 user_input = prompt_user_bool(parameter_name=parameter)
-            if parameter_dict[parameter] == type(7): #prompt for int
+            if parameter_dict[parameter] == type(7):
                 user_input = prompt_user_int(parameter_name=parameter)
-            if parameter_dict[parameter] == type(['str','str','str']): #prompt for list
+            if parameter_dict[parameter] == type(['str','str','str']):
                 user_input = prompt_user_list(parameter_name=parameter)
-            if parameter_dict[parameter] == type({"key": "value"}): #prompt for dict, avoid this data input for legopython functions.
+            if parameter_dict[parameter] == type({"key": "value"}):
                 user_input = prompt_user_dict(parameter_name=parameter)
             if parameter_dict[parameter] == typing.Union[list, str]:
                 user_input = prompt_user_list(parameter_name=parameter)
@@ -172,7 +204,7 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
                 if user_input != '':
                     parameter_input[parameter] = user_input
             except UnboundLocalError:
-                print(f'{parameter_dict[parameter]} is not a supported type; bug with {function_name}. Exiting.')
+                print(f'{parameter_dict[parameter]} is not a supported type; Exiting.')
                 time.sleep(3)
                 return support_functions_menu()
 
@@ -182,13 +214,14 @@ def prompt_user_parameters(function_name, skip_params:list, prompt=True) -> dict
             return support_functions_menu()
     return parameter_input
 
+
 def support_functions_menu():
     ''' Prints available functions and allows selection of function in support_functions_dict'''
 
     support_functions_dict = {
         0   : {'name':f'Change Settings    ENV:{lp_settings.ENVIRONMENT}','function':prompt_set_setting,'skip_param':[]},
         1   : {'name':'Update legopython: pip install','function':'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple','skip_param':[]},
-        2   : {'name':'Example Internal Application Module','function':example.auth_example,'skip_param':[]}
+        2   : {'name':'Example Internal Application Module','function':'example_api_basic_auth','skip_param':[]}
     }
 
     #Display menu
@@ -201,11 +234,12 @@ def support_functions_menu():
 
     user_input = lp_general.prompt_user_int('\nEnter the number for a Support Function ', maximum=(len(support_functions_dict)-1))
 
-    if isinstance(support_functions_dict[user_input]['function'], types.FunctionType): #If the support dict function is a function instead of a string:
+    #If user selected a function instead of a string, else call the string via command line.
+    if isinstance(support_functions_dict[user_input]['function'], types.FunctionType):
         func = support_functions_dict[user_input]['function']
         skip_params = support_functions_dict[user_input]['skip_param']
         user_parameters = prompt_user_parameters(func, skip_params)
-        if user_parameters == {}: #if no user parameters entered or if all parameters skip, do not submit parameters
+        if user_parameters == {}: #if no user parameters entered or if all parameters skip
             func()
         else:
             func(**user_parameters)
@@ -220,10 +254,8 @@ def support_functions_menu():
 
 
 def main():
-    ''' Start the interface loop for legopython text UI'''
-
+    ''' Start the CLI interface loop'''
     support_functions_menu()
-
 
 if __name__ == '__main__':
     main()
