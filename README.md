@@ -145,7 +145,7 @@ Summary: The developer install is for those who want to contribute to or clone L
 The user install url does not work with the template. This example shows how you could have a non-technical user update from an internally published, proprietary version of LegoPython, pip in Jfrog Artifactory.
 1. Command Line Instructions
    ```js
-   'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple';
+   pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple;
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -166,10 +166,9 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Update CLI interface to GUI
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Confirm Support for Latest Python Version
+- [ ] Update CLI interface to a GUI
+- [ ] Allow automatic Bearer Token Retrieval
 
 See the [open issues](https://github.com/ralbee1/legopython/issues) for a full list of proposed features (and known issues).
 
