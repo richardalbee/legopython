@@ -71,7 +71,7 @@
 <!-- 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-LegoPython was concieved to facilitate and standardize internal tooling efforts, initially structuring business processes for many internal applications and hundreds of resulting internal scripts. LegoPython embodies component-based development; by developing and iterating upon reusable modules, others can build upon our progress. This template is stripped down to the core, nonpropriatary, application-level features for use across  organizations. Currently, LegoPython is focused on API, AWS, and Database data workflows although other data sources would also be supported.
+LegoPython was concieved to facilitate and standardize internal tooling efforts, initially structuring business processes for many internal applications and hundreds of resulting internal scripts. LegoPython embodies component-based development; by developing and iterating upon reusable modules, others can build upon our progress. This template is stripped down to the core, nonpropriatary, application-level features for use across  organizations. Currently, LegoPython is a scripting sandbox focused on developing API, AWS, and Database data workflows although other data sources would also be supported.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
