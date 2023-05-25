@@ -141,13 +141,25 @@ Summary: The developer install is for those who want to contribute to or clone L
     
     If all of your users are savvy enough to update their pip install after updating from master, then this step is signifcantly less worth the investment.
 
+
 **Demo Internal User Install - Requires Internal Workflows to be set up**
 <br />
 The user install url does not natively work with the template. This example shows how you could have a non-technical user update from an internally published, proprietary version of LegoPython, pip in Jfrog Artifactory.
-1. Command Line Instructions
+1. Automatic User Install
    ```js
    pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple;
    ```
+
+**OR**
+1. Manual Pip Install from root legopython directory
+```js
+py -m build --wheel
+```
+
+Then provide the user the .whl to install
+```js
+pip install --use-wheel --no-index --find-links=/where/its/downloaded whl_name
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
