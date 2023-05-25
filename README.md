@@ -66,16 +66,14 @@
 </details>
 
 
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 <!-- 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-LegoPython was concieved to facilitate and standardize internal tooling efforts, supporting hundreds of internal scripts and multiple internal applications. LegoPython embodies component-based development; by developing and iterating upon reusable modules, we have more building blocks to use in the future. This template is stripped down to the core, nonpropriatary, application-level features.
+LegoPython was concieved to facilitate and standardize internal tooling efforts, initially structuring business processes for many internal applications and hundreds of resulting internal scripts. LegoPython embodies component-based development; by developing and iterating upon reusable modules, others can build upon our progress. This template is stripped down to the core, nonpropriatary, application-level features for use across  organizations. Currently, LegoPython is focused on API, AWS, and Database scripting although other data interfaces would also be supported.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 ### Built With
@@ -86,10 +84,26 @@ LegoPython was concieved to facilitate and standardize internal tooling efforts,
 
 ### Features
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Global Settings
+  - [ ] Environment Handling
+  - [ ] Logging Level (Console + Log File)
+  - [ ] AWS Region
+- [ ] API Authentication
+  - [ ] Basic Auth
+  - [ ] Bearer Tokens
+- [ ] AWS Products
+  - [ ] Secrets Manager
+  - [ ] DynamoDB
+  - [ ] S3
+- [ ] Databases (PostGreSQL)
+  - [ ] Creating SQL connections from Secrets Manager credentials
+- [ ] CLI Interface
+    - [ ] No Code CLI Interface
+    - [ ] Change Global Settings
+    - [ ] Supports any Python function or Command Line
+- [ ] Auto Updating (Artifactory) 
+- [ ] Templates for new API modules
+- [ ] PyPi Installs
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -145,7 +159,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ## Roadmap
 
 - [ ] Feature 1
-- [ ] Feature 2
+- [ ] Update CLI interface to GUI
 - [ ] Feature 3
     - [ ] Nested Feature
 
