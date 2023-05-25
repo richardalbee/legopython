@@ -26,11 +26,12 @@ requires = [
     'configparser'
 ]
 
+#Specify which scripts should be command line callable.
 scripts = []
-import_folders = ['legopython','scripts','external']
+import_folders = ['scripts','external']
 for folder in import_folders:
     for python_module in Path(folder).iterdir():
-        if python_module.suffix == ".py": #grab python scripts only
+        if python_module.suffix == ".py":
             scripts.append(str(python_module))
 
 setuptools.setup(
