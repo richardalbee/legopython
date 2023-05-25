@@ -180,7 +180,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ## Roadmap
 LegoPython is a passion project I update throughout my career as I come across new Python usecases. I welcome additional support on new features.
 
-- [ ] Confirm Support for Latest Python Version
+- [ ] Migrate to Latest Python Version from 3.10.8
 - [ ] Update CLI interface to a GUI
 - [ ] Allow automatic Bearer Token Retrieval
 - [ ] Investigate Support for Multiple AWS Sessions in the same window
