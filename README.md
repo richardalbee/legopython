@@ -71,7 +71,7 @@
 <!-- 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-LegoPython was concieved to facilitate and standardize internal tooling efforts, initially structuring business processes for many internal applications and hundreds of resulting internal scripts. LegoPython embodies component-based development; by developing and iterating upon reusable modules, others can build upon our progress. This template is stripped down to the core, nonpropriatary, application-level features for use across  organizations. Currently, LegoPython is focused on API, AWS, and Database scripting although other data interfaces would also be supported.
+LegoPython was concieved to facilitate and standardize internal tooling efforts, initially structuring business processes for many internal applications and hundreds of resulting internal scripts. LegoPython embodies component-based development; by developing and iterating upon reusable modules, others can build upon our progress. This template is stripped down to the core, nonpropriatary, application-level features for use across  organizations. Currently, LegoPython is focused on API, AWS, and Database data workflows although other data sources would also be supported.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -84,26 +84,26 @@ LegoPython was concieved to facilitate and standardize internal tooling efforts,
 
 ### Features
 
-- [ ] Global Settings
+- [ ] **Global Settings**
   - [ ] Environment Handling
   - [ ] Logging Level (Console + Log File)
   - [ ] AWS Region
-- [ ] API Authentication
+- [ ] **API Authentication**
   - [ ] Basic Auth
   - [ ] Bearer Tokens
-- [ ] AWS Products
+- [ ] **AWS Products**
   - [ ] Secrets Manager
   - [ ] DynamoDB
   - [ ] S3
-- [ ] Databases (PostGreSQL)
+- [ ] **Databases (PostGreSQL)**
   - [ ] Creating SQL connections from Secrets Manager credentials
-- [ ] CLI Interface
+- [ ] **CLI Interface**
     - [ ] No Code CLI Interface
     - [ ] Change Global Settings
     - [ ] Supports any Python function or Command Line
-- [ ] Auto Updating (Artifactory) 
-- [ ] Templates for new API modules
-- [ ] PyPi Installs
+- [ ] **Auto Updating (Artifactory)**
+- [ ] **Templates for new API modules**
+- [ ] **PyPi Installs**
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -113,12 +113,15 @@ LegoPython was concieved to facilitate and standardize internal tooling efforts,
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+This is an guide for setting up LegoPython locally.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
+1. [Python 3.10.8](https://www.python.org/downloads/release/python-3108/)
+2. [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+3. [AWS SSO Login Configured](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html)
+
+Pip 
 * npm
   ```sh
   npm install npm@latest -g
@@ -126,18 +129,23 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+**Developer Install:**
+Summary: The developer install is for those who want to contribute to or clone LegoPython.
+1. Clone the repo (or use Github Desktop)
    ```sh
    git clone https://github.com/ralbee1/legopython.git
    ```
-3. Install NPM packages
+2. Open the CLI and navigate the current working directory to where you cloned LegoPython
+2. Install the Pip Package from the CLI, copy and run this command:
    ```sh
-   npm install
+   py -m pip install -e .
    ```
-4. Enter your API in `config.js`
+
+**User Install**
+The user install url does not work with the template. This example shows how you could have a non-technical user update from an internally published pip.
+1. Command Line Instructions
    ```js
-   const API_KEY = 'ENTER YOUR API';
+   'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple';
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
