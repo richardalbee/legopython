@@ -12,7 +12,6 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -105,6 +104,7 @@ LegoPython was concieved to facilitate and standardize internal tooling efforts,
 - [ ] **Templates for new API modules**
 - [ ] **PyPi Installs**
 
+If you would like to learn more about these features, documentation is [here](https://github.com/ralbee1/legopython).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -137,12 +137,13 @@ Summary: The developer install is for those who want to contribute to or clone L
    ```
 4. [Optional] Internal Pip Install
      
-    This step configures the "User Install" below. If are copying this template for internal use, you can allow non-technical users to update your private version of LegoPython by creating a simple DevOps workflow to package the pip (Jenkins/Github Actions, Ect), uploading the pip to an internally accessible location (ex) Jfrog Artifactory), creating a secure read-only account to download the pip, and updating those credentials into a function which caches a .netrc file in the users home directory.
+    This step configures the "User Install" described below. If are copying this template for internal use, you can allow non-technical users to update your private version of LegoPython by creating a simple DevOps workflow to package the pip (Jenkins/Github Actions, Ect), uploading the pip to an internally accessible location (ex) Jfrog Artifactory), creating a secure read-only account to download the pip, and updating those credentials into a function which caches a .netrc file in the users home directory.
     
     If all of your users are savvy enough to update their pip install after updating from master, then this step is signifcantly less worth the investment.
 
-**Example User Install - Does not Work**
-The user install url does not work with the template. This example shows how you could have a non-technical user update from an internally published, proprietary version of LegoPython, pip in Jfrog Artifactory.
+**Demo Internal User Install - Requires Internal Workflows to be set up**
+<br />
+The user install url does not natively work with the template. This example shows how you could have a non-technical user update from an internally published, proprietary version of LegoPython, pip in Jfrog Artifactory.
 1. Command Line Instructions
    ```js
    pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple;
@@ -165,6 +166,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 <!-- ROADMAP -->
 ## Roadmap
+LegoPython is a passion project I update throughout my career as I come across new Python usecases. I welcome additional support on new features.
 
 - [ ] Confirm Support for Latest Python Version
 - [ ] Update CLI interface to a GUI
