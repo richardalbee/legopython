@@ -183,6 +183,7 @@ LegoPython is a passion project I update throughout my career as I come across n
 - [ ] Confirm Support for Latest Python Version
 - [ ] Update CLI interface to a GUI
 - [ ] Allow automatic Bearer Token Retrieval
+- [ ] Investigate Support for Multiple AWS Sessions in the same window
 
 See the [open issues](https://github.com/ralbee1/legopython/issues) for a full list of proposed features (and known issues).
 
