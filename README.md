@@ -121,11 +121,6 @@ This is an guide for setting up LegoPython locally.
 2. [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 3. [AWS SSO Login Configured](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html)
 
-Pip 
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
 
 ### Installation
 
@@ -136,13 +131,18 @@ Summary: The developer install is for those who want to contribute to or clone L
    git clone https://github.com/ralbee1/legopython.git
    ```
 2. Open the CLI and navigate the current working directory to where you cloned LegoPython
-2. Install the Pip Package from the CLI, copy and run this command:
+3. Install the Pip Package from the CLI, copy and run this command:
    ```sh
    py -m pip install -e .
    ```
+4. [Optional] Internal Pip Install
+     
+    This step configures the "User Install" below. If are copying this template for internal use, you can allow non-technical users to update your private version of LegoPython by creating a simple DevOps workflow to package the pip (Jenkins/Github Actions, Ect), uploading the pip to an internally accessible location (ex) Jfrog Artifactory), creating a secure read-only account to download the pip, and updating those credentials into a function which caches a .netrc file in the users home directory.
+    
+    If all of your users are savvy enough to update their pip install after updating from master, then this step is signifcantly less worth the investment.
 
-**User Install**
-The user install url does not work with the template. This example shows how you could have a non-technical user update from an internally published pip.
+**Example User Install - Does not Work**
+The user install url does not work with the template. This example shows how you could have a non-technical user update from an internally published, proprietary version of LegoPython, pip in Jfrog Artifactory.
 1. Command Line Instructions
    ```js
    'pip install --upgrade legopython -i https://app.jfrog.io/artifactory/api/pypi/home-pypi/simple';
@@ -199,7 +199,6 @@ Don't forget to give the project a star! Thanks again!
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -207,19 +206,16 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Richard Albee - ralbee1@iwu.edu
-Project Link: [https://github.com/ralbee1/legopython](https://github.com/ralbee1/legopython)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+* []()Email - ralbee1@iwu.edu
+* []()Project Link: [https://github.com/ralbee1/legopython](https://github.com/ralbee1/legopython)
 
 
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []() Thank you Justin for 
-* []()
-* []()
+* []() Thank you Justin G. for your amazing mentorship. You deserve all the credit for initially creating what LegoPython is based off of.
+* []() Huge shoutout to Ted G. for another amazing mentor and for contributing to design elements of LegoPython.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
