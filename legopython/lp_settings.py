@@ -2,7 +2,7 @@
 
 Lego Python supports the following
 
-ENVIRONMENT: MoxeAPI and external module templates point different API endpoints depending on env.
+ENVIRONMENT: point different API endpoints depending on env. EX) Prod, Test, QA
 LOGGER_LEVEL = Controls both console and log file logging levels in lp_logging
 LOG_FILE_ENABLED = Boolean string for creating a log file.
 LOG_LOCATION = Filepath to the log file.
@@ -122,11 +122,9 @@ def __create_pip_update_credentials():
     Used when publishing a pip internally if module is used at a secure workplace.
 
     #https://pip.pypa.io/en/stable/topics/authentication/'''
-    #artifactory_serviceaccount_pw = lp_secretsmanager.get_secret_v2(secret_name='pypi-artifactory-token')
     with open('.netrc', 'w', newline='', encoding='utf-8') as newfile:
         newfile.write('machine toolshealth.jfrog.io\n')
         newfile.write('login pypi-user\n')
-        #newfile.write(f'password {artifactory_serviceaccount_pw}') #value needs to be API key
 
 
 #Settings file ran to initialize settings file to globals.

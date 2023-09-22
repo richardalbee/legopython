@@ -17,9 +17,7 @@ logger = logging.getLogger("legopython")
 
 
 def __console_log_handler(level=logger.info):
-    '''Add the "default" handler for the moxepython logger at the INFO level
-    Pass a different log level in for different screen outputs
-    '''
+    '''Add the "default" handler at the INFO level'''
     console_config = logging.StreamHandler(sys.stdout) #push log messages to the console
     console_config.setFormatter(logging.Formatter('%(message)s')) #just show messages, not module or time
     console_config.setLevel(level)
@@ -42,9 +40,8 @@ def __test_logging():
 #Configures how console print outs through std.out'''
 __console_log_handler(lp_settings.LOGGER_LEVEL.upper())
 
-#Configure how the log file is set up if enabled.
+#This controls what logger.{type} is printed and how the log file is formatted.
 if lp_settings.LOG_FILE_ENABLED:
-    #This controls what logger.{type} is printed and how the log file is formatted.
     logging.basicConfig(
         filename = f'{lp_settings.LOG_LOCATION}/log.txt',
         encoding ='utf-8',
